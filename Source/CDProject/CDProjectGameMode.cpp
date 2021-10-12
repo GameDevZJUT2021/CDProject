@@ -3,6 +3,7 @@
 #include "CDProjectGameMode.h"
 #include "CDProjectPlayerController.h"
 #include "CDProjectCharacter.h"
+#include "Engine/StaticMeshActor.h"
 #include "UObject/ConstructorHelpers.h"
 
 ACDProjectGameMode::ACDProjectGameMode()
@@ -17,4 +18,20 @@ ACDProjectGameMode::ACDProjectGameMode()
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
 
+}
+
+void ACDProjectGameMode::StartPlay() {
+	Super::StartPlay();
+
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		MyGameInfo = World->SpawnActor<AGameInfo>();
+		MyGameInfo->Init(25, 25);
+	}
+	//for (TObjectIterator<AStaticMeshActor> Itr; Itr; ++Itr)
+	//{
+	//	AStaticMeshActor* curr = *Itr;
+	//	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Yellow, curr->GetHumanReadableName());
+	//}
 }

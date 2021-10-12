@@ -43,7 +43,7 @@ void ACubePawn::Tick(float DeltaTime)
 		FVector NewLocation = GetActorLocation() + (Direction * Speed);
 		SetActorLocation(NewLocation);
 
-		if (FVector::Dist(NewLocation, LocationBeforeMove) >= 120)
+		if (FVector::Dist(NewLocation, LocationBeforeMove) >= 100)
 		{
 			bMoving = false;
 			Direction = FVector(0.0f, 0.0f, 0.0f);

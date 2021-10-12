@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "ObservePawn.h"
 #include "CubePawn.h"
+#include "GameInfo.h"
 #include "CDProjectPlayerController.generated.h"
 
 UCLASS()
@@ -26,11 +27,16 @@ protected:
 
 	ACubePawn* TestPawn;
 
+	AGameInfo* MyGameInfo;
+
 	// Begin PlayerController interface
 	virtual void BeginPlay() override;
 	virtual void PlayerTick(float DeltaTime) override;
 	virtual void SetupInputComponent() override;
 	// End PlayerController interface
+
+	void ProcessMoveAction(int Action);
+	bool ProcessMoveActionDone();
 
 	void OnMoveLeft();
 	void OnMoveRight();

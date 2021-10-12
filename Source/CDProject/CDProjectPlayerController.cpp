@@ -35,6 +35,12 @@ void ACDProjectPlayerController::BeginPlay() {
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		TestPawn = World->SpawnActor<ACubePawn>(Location, Rotation, SpawnParams);
 	}
+
+	// get GameInfo
+	for (TObjectIterator<AGameInfo> Itr; Itr; ++Itr)
+	{
+		MyGameInfo = *Itr;
+	}
 }
 
 void ACDProjectPlayerController::PlayerTick(float DeltaTime)
@@ -48,10 +54,29 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 		if (ActionQueue.Dequeue(Action))
 		{
 			bOperatingAction = true;
-			if (Action == ECameraTurnLeft || Action == ECameraTurnRight)
-				MyObservePawn->BeginRotate(Action);
-			else
+			switch (Action)
 			{
+			case EForward:
+			case EBack:
+			case ELeft:
+			case ERight:
+				ProcessMoveAction(Action);
+				TestPawn->ControlMove(Action, CameraDirection);
+				break;
+			case ECameraTurnLeft:
+			case ECameraTurnRight:
+				MyObservePawn->BeginRotate(Action);
+				break;
+			default:break;
+			}
+			//{
+				/*
+				for (TObjectIterator<ACubePawn> Itr; Itr; ++Itr)
+				{
+					ACubePawn* curr = *Itr;
+					GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, curr->GetHumanReadableName());
+				}
+				*/
 				/*
 				待实现
 
@@ -76,34 +101,61 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 				*/
 				
 				// just for test
-				TestPawn->ControlMove(Action,CameraDirection);
-			}
+				
+			//}
 		}
 		else // There is no Action input
 			return;
 	}
 	else
 	{
-		if (Action == ECameraTurnLeft || Action == ECameraTurnRight)
+		switch (Action)
 		{
-			if (MyObservePawn->isRotateDone())
+		case EForward:
+		case EBack:
+		case ELeft:
+		case ERight:
+			if (ProcessMoveActionDone())
 			{
-				bOperatingAction = false;
-				Action == ECameraTurnLeft ? CameraDirection++ : CameraDirection--;
+
 			}
-		}
-		else
-		{
 			if (TestPawn->isMoveDone())
 			{
 				bOperatingAction = false;
 				// 未实现:一次操作结束后,更新规则库.
 			}
+			break;
+		case ECameraTurnLeft:
+		case ECameraTurnRight:
+			if (MyObservePawn->isRotateDone())
+			{
+				bOperatingAction = false;
+				Action == ECameraTurnLeft ? CameraDirection++ : CameraDirection--;
+				//UpdateRule();
+			}
+			break;
+		default:break;
 		}
 	}
 
 }
 
+void ACDProjectPlayerController::ProcessMoveAction(int Action) {
+	//TArray selfsTag= GetSelf
+	//for every selfTag
+	//    find pawn-ptr
+	//for every pawn-ptr
+	//    pawn-ptr->move()
+	
+}
+
+bool ACDProjectPlayerController::ProcessMoveActionDone() {
+	return true;
+}
+
+
+
+// Input
 void ACDProjectPlayerController::SetupInputComponent()
 {
 	// set up gameplay key bindings
