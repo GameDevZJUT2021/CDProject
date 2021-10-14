@@ -4,9 +4,8 @@
 #include "ObservePawn.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GenericPlatform/GenericPlatformMath.h"
+#include "CommonEnum.h"
 #include "Camera/CameraComponent.h"
-
-enum Actions { EForward, EBack, ELeft, ERight, ECameraTurnLeft, ECameraTurnRight };
 
 // Sets default values
 AObservePawn::AObservePawn()
@@ -31,7 +30,7 @@ AObservePawn::AObservePawn()
 void AObservePawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame
@@ -46,12 +45,13 @@ void AObservePawn::Tick(float DeltaTime)
 		// Rotate finish
 		if (RotatedAngle >= 90)
 		{
-			bRotating = false;
 			RotatedAngle = 0;
 
 			// Round to prevent the  accumulation of float error
 			FVector Radius = GetActorLocation();
 			SetActorLocation(FVector(round(Radius.X),round(Radius.Y),Radius.Z));
+
+			bRotating = false;
 			return;
 		}
 
@@ -76,9 +76,9 @@ void AObservePawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 }
 
-void AObservePawn::BeginRotate(int Direction) {
+void AObservePawn::BeginRotate(EActions Action) {
 	bRotating = true;
-	Direction == ECameraTurnLeft ? RotateDirection = 1 : RotateDirection = -1;
+	Action == EActions::CameraTurnLeft ? RotateDirection = 1 : RotateDirection = -1;
 }
 
 bool AObservePawn::isRotateDone() {

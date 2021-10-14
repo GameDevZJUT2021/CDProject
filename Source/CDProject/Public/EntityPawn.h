@@ -4,18 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "ParentPawn.h"
-#include "CubePawn.generated.h"
+#include "EntityPawn.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
-class CDPROJECT_API ACubePawn : public AParentPawn
+class CDPROJECT_API AEntityPawn : public AParentPawn
 {
 	GENERATED_BODY()
 
 public:
-	ACubePawn();
+	AEntityPawn();
 
 	virtual void BeginPlay() override;
 
@@ -25,18 +23,24 @@ public:
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* StaticMeshComponent;
 
+	UPROPERTY(EditAnywhere)
+	bool bWalkable = true;
+
+	UPROPERTY(EditAnywhere)
+	EObjectTags Tag = EObjectTags::Baba;
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	const float Speed = 10.0f;
-	FVector Direction;
+	const float Speed = 1.0f;
+	FVector MoveDirection;
+	FVector FaceDirecion;
 	bool bMoving = false;
-	//void ControlledMove(int Action, int CameraDirection) override;
-	bool isMoveDone() override;
+
+	virtual void ControlledMove(EActions Action, ECameraAbsLocations CameraAbsLocations) override;
+	virtual void IndependentMove() override;
+	virtual bool isMoveDone() override;
 
 private:
 	FVector LocationBeforeMove;
-	
 };
-
-

@@ -36,3 +36,26 @@ void AGameInfo::Tick(float DeltaTime)
 
 }
 
+// 未实现,只简单返回Baba作为selftag,应该通过读取ActiveRules来获取SelfTags
+TArray<EObjectTags> AGameInfo::GetSelfTags() const{
+	TArray<EObjectTags> SelfTags;
+	SelfTags.Init(EObjectTags::Baba,1);
+	return SelfTags;
+}
+
+// 未实现
+TArray<AParentPawn*> AGameInfo::GetSelfPawns() const {
+	TArray<AParentPawn*> SelfPawns;
+	SelfPawns.Init(nullptr, 1);
+	return SelfPawns;
+
+	//TArray<EObjectTags> SelfTags = GetSelfTags();
+	//for (int i = 0; i < MapWidth; i++)
+	//	for (int j = 0; j < MapLength; j++)
+	//		for (const EObjectTags& SelfTag : SelfTags)
+	//		{
+	//			check if MapInfo[i * MapWidth + j] == SelfTag;
+	//			add into array
+	//		}
+}
+

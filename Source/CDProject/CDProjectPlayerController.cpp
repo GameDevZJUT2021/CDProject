@@ -5,9 +5,9 @@
 #include "Runtime/Engine/Classes/Components/DecalComponent.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "CDProjectCharacter.h"
+#include "EntityPawn.h"
+#include "EngineUtils.h"
 #include "Engine/World.h"
-
-enum Actions { EForward, EBack, ELeft, ERight, ECameraTurnLeft, ECameraTurnRight };
 
 ACDProjectPlayerController::ACDProjectPlayerController()
 {
@@ -23,23 +23,35 @@ void ACDProjectPlayerController::BeginPlay() {
 		// Spawn a ObserveCamera
 		FVector Location = FVector(-1800.0f, 0.0f, 1500.0f);
 		FRotator Rotation = FRotator(-50.0f, 0.0f, 0.0f);
-
 		MyObservePawn = World->SpawnActor<AObservePawn>(Location, Rotation);
 
-		// Spawn a test Pawn
-		Location = FVector(0.0f, 0.0f, 50.0f);
-		Rotation = FRotator(0.0f, 0.0f, 0.0f);
 		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = this;
 		SpawnParams.bNoFail = 1;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		TestPawn = World->SpawnActor<ACubePawn>(Location, Rotation, SpawnParams);
-	}
+		// Spawn a test Walkable Entity Pawn Water
+		Location = FVector(200.0f, 0.0f, 55.0f);// a little bit higher than 50, avoid collision with ground
+		Rotation = FRotator(0.0f, 0.0f, 0.0f);
+		AEntityPawn* WaterEntityPawn = World->SpawnActor<AEntityPawn>(Location, Rotation, SpawnParams);
+		WaterEntityPawn->Tag = EObjectTags::Water;
+		WaterEntityPawn->bWalkable = true;
 
-	// get GameInfo
-	for (TObjectIterator<AGameInfo> Itr; Itr; ++Itr)
-	{
-		MyGameInfo = *Itr;
+		// Spawn a test UnWalkable Entity Pawn Tree
+		Location = FVector(0.0f, 0.0f, 55.0f);
+		Rotation = FRotator(0.0f, 0.0f, 0.0f);
+		AEntityPawn* TreeEntityPawn = World->SpawnActor<AEntityPawn>(Location, Rotation, SpawnParams);
+		TreeEntityPawn->Tag = EObjectTags::Tree;
+		TreeEntityPawn->bWalkable = false;
+
+		// Spawn a test Walkable Entity Pawn Baba
+		Location = FVector(200.0f, 200.0f, 55.0f);
+		Rotation = FRotator(0.0f, 0.0f, 0.0f);
+		AEntityPawn* BabaEntityPawn = World->SpawnActor<AEntityPawn>(Location, Rotation, SpawnParams);
+		BabaEntityPawn->Tag = EObjectTags::Baba;
+		BabaEntityPawn->bWalkable = false;
+
+		// Spawn GameInfo
+		MyGameInfo = World->SpawnActor<AGameInfo>();
+		MyGameInfo->Init(25, 25);
 	}
 }
 
@@ -48,7 +60,7 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 	Super::PlayerTick(DeltaTime);
 	this->SetViewTarget(MyObservePawn);
 
-	static int Action;
+	static EActions Action;
 	if (!bOperatingAction)
 	{
 		if (ActionQueue.Dequeue(Action))
@@ -56,53 +68,21 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 			bOperatingAction = true;
 			switch (Action)
 			{
-			case EForward:
-			case EBack:
-			case ELeft:
-			case ERight:
+			
+			case EActions::Forward:
+			case EActions::Back:
+			case EActions::Left:
+			case EActions::Right:
 				ProcessMoveAction(Action);
-				TestPawn->ControlMove(Action, CameraDirection);
 				break;
-			case ECameraTurnLeft:
-			case ECameraTurnRight:
+
+			case EActions::CameraTurnLeft:
+			case EActions::CameraTurnRight:
 				MyObservePawn->BeginRotate(Action);
 				break;
+
 			default:break;
 			}
-			//{
-				/*
-				for (TObjectIterator<ACubePawn> Itr; Itr; ++Itr)
-				{
-					ACubePawn* curr = *Itr;
-					GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, curr->GetHumanReadableName());
-				}
-				*/
-				/*
-				待实现
-
-				根据规则库获取当前应该操作的Pawn对象序列
-				TArray<Pawn*> ControlPawn = GetControlPawn();
-				possess所有对应的Pawn,调用移动函数,每个Pawn在自己的移动函数内处理碰撞等操作
-				for(every Pawn in ControlPawn)
-				{
-					Possess(Pawn)// 或许不需要Possess,可以直接进行函数调用从而进行操纵
-					Pawn->ControlMove(Action);// 规则的改变在这里面
-				}
-				Possess(ObserverPawn)
-
-				根据规则库获取当前应该Move的Pawn对象序列
-				TArray<Pawn*> MovePawn = GetMovePawn();
-				for(every Pawn in MovePawn)
-				{
-					Possess(Pawn)
-					Pawn->SelfMove();// 规则的改变在这里
-				}
-				Possess(ObserverPawn)
-				*/
-				
-				// just for test
-				
-			//}
 		}
 		else // There is no Action input
 			return;
@@ -111,48 +91,73 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 	{
 		switch (Action)
 		{
-		case EForward:
-		case EBack:
-		case ELeft:
-		case ERight:
+
+		case EActions::Forward:
+		case EActions::Back:
+		case EActions::Left:
+		case EActions::Right:
 			if (ProcessMoveActionDone())
 			{
-
-			}
-			if (TestPawn->isMoveDone())
-			{
 				bOperatingAction = false;
-				// 未实现:一次操作结束后,更新规则库.
+				//MyGameInfo->UpdateRule();
 			}
 			break;
-		case ECameraTurnLeft:
-		case ECameraTurnRight:
+
+		case EActions::CameraTurnLeft:
+		case EActions::CameraTurnRight:
 			if (MyObservePawn->isRotateDone())
 			{
+				UpdateCameraAbsLocation(Action);
 				bOperatingAction = false;
-				Action == ECameraTurnLeft ? CameraDirection++ : CameraDirection--;
 				//UpdateRule();
 			}
 			break;
+
 		default:break;
 		}
 	}
 
 }
 
-void ACDProjectPlayerController::ProcessMoveAction(int Action) {
-	//TArray selfsTag= GetSelf
-	//for every selfTag
-	//    find pawn-ptr
-	//for every pawn-ptr
-	//    pawn-ptr->move()
-	
+
+void ACDProjectPlayerController::ProcessMoveAction(EActions Action) {
+	checkf(MyGameInfo, TEXT("we are not holding GameInfo"));
+
+	int i = 1;
+	for (TActorIterator<AEntityPawn> iter(GetWorld()); iter; ++iter)
+	{
+		AEntityPawn* EntityPawn = *iter;
+		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString::Printf(TEXT("pawn count %d"), i++));
+		//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, EntityPawn->GetHumanReadableName());
+		EntityPawn->ControlledMove(Action, CameraAbsLocation);
+	}
+	//TArray<AParentPawn*> SelfPawns = MyGameInfo->GetSelfPawns();
+	//for (AParentPawn* SelfPawn : SelfPawns)
+	//	SelfPawn->ControlledMove(Action,CameraAbsLocation);
+
+	//TArray<AParentPawn*> SelfPawns = MyGameInfo->GetMovePawns();
+	//for (AParentPawn* SelfPawn : SelfPawns)
+	//	SelfPawn->IndependentMove(Action);
 }
 
+
 bool ACDProjectPlayerController::ProcessMoveActionDone() {
+	for (TActorIterator<AEntityPawn> iter(GetWorld()); iter; ++iter)
+	{
+		AEntityPawn* EntityPawn = *iter;
+		if (!EntityPawn->isMoveDone()) return false;
+	}
 	return true;
 }
 
+
+void ACDProjectPlayerController::UpdateCameraAbsLocation(EActions Action) {
+	int location = (int)CameraAbsLocation;
+	location += Action == EActions::CameraTurnLeft ? 1 : -1;
+	location = location < 0 ? 3 : location % 4;
+	CameraAbsLocation = (ECameraAbsLocations)location;
+	//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString::Printf(TEXT("CameAbsLocation: %d"),(int)CameraAbsLocation));
+}
 
 
 // Input
@@ -173,30 +178,30 @@ void ACDProjectPlayerController::SetupInputComponent()
 
 void ACDProjectPlayerController::OnMoveForward() {
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString(TEXT("Move Forward")));
-	ActionQueue.Enqueue(EForward);
+	ActionQueue.Enqueue(EActions::Forward);
 }
 
 void ACDProjectPlayerController::OnMoveBack() {
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString(TEXT("Move Back")));
-	ActionQueue.Enqueue(EBack);
+	ActionQueue.Enqueue(EActions::Back);
 }
 
 void ACDProjectPlayerController::OnMoveLeft() {
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString(TEXT("Move Left")));
-	ActionQueue.Enqueue(ELeft);
+	ActionQueue.Enqueue(EActions::Left);
 }
 
 void ACDProjectPlayerController::OnMoveRight() {
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString(TEXT("Move Right")));
-	ActionQueue.Enqueue(ERight);
+	ActionQueue.Enqueue(EActions::Right);
 }
 
 void ACDProjectPlayerController::OnCameraTurnLeft() {
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString(TEXT("Turn Left")));
-	ActionQueue.Enqueue(ECameraTurnLeft);
+	ActionQueue.Enqueue(EActions::CameraTurnLeft);
 }
 
 void ACDProjectPlayerController::OnCameraTurnRight() {
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString(TEXT("Turn Right")));
-	ActionQueue.Enqueue(ECameraTurnRight);
+	ActionQueue.Enqueue(EActions::CameraTurnRight);
 }

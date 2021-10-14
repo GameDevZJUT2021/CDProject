@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ParentPawn.h"
+#include "..\CommonEnum.h"
 #include "GameInfo.generated.h"
 
 struct UnitInfo
@@ -32,6 +33,9 @@ public:
 	TArray	<UnitInfo> MapInfo; // 2D array. UE4 does not support 2D array naturally, so use a simple conversion instead
 	TArray<FString> ActiveRules;
 	TArray<FString> RulesPool;
+
+	TArray<EObjectTags> GetSelfTags() const;
+	TArray<AParentPawn*> GetSelfPawns() const;
 
 protected:
 	// Called when the game starts or when spawned

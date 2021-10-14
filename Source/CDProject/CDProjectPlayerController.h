@@ -7,6 +7,7 @@
 #include "ObservePawn.h"
 #include "CubePawn.h"
 #include "GameInfo.h"
+#include "CommonEnum.h"
 #include "CDProjectPlayerController.generated.h"
 
 UCLASS()
@@ -18,15 +19,14 @@ public:
 	ACDProjectPlayerController();
 
 protected:
-	TQueue<int> ActionQueue;
+	TQueue<EActions> ActionQueue;
 	bool bOperatingAction = 0;
 
-	int CameraDirection = 0;
+	ECameraAbsLocations CameraAbsLocation = ECameraAbsLocations::South;
 
 	AObservePawn* MyObservePawn;
 
-	ACubePawn* TestPawn;
-
+	UPROPERTY(VisibleAnywhere)
 	AGameInfo* MyGameInfo;
 
 	// Begin PlayerController interface
@@ -35,7 +35,9 @@ protected:
 	virtual void SetupInputComponent() override;
 	// End PlayerController interface
 
-	void ProcessMoveAction(int Action);
+	void UpdateCameraAbsLocation(EActions Action);
+
+	void ProcessMoveAction(EActions Action);
 	bool ProcessMoveActionDone();
 
 	void OnMoveLeft();
@@ -45,6 +47,6 @@ protected:
 
 	void OnCameraTurnLeft();
 	void OnCameraTurnRight();
-	void OnCameraZoomIn();
+	//void OnCameraZoomIn();
 
 };

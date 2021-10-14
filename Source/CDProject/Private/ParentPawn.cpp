@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "ParentPawn.h"
 
 // Sets default values
@@ -33,11 +30,11 @@ void AParentPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 }
 
 
-void AParentPawn::ControlMove(int Action,int CameraDirection) {
+void AParentPawn::ControlledMove(EActions Action, ECameraAbsLocations CameraAbsLocations) {
 
 }
 
-void AParentPawn::SelfMove() {
+void AParentPawn::IndependentMove() {
 
 }
 

@@ -52,21 +52,21 @@ void ACubePawn::Tick(float DeltaTime)
 
 }
 
-void ACubePawn::ControlMove(int Action, int CameraDirection) {
-	bMoving = true;
-	LocationBeforeMove = GetActorLocation();
-
-	switch (Action) {
-	case EForward:Direction.X = FMath::Clamp(1.0f, -1.0f, 1.0f); break;
-	case EBack:Direction.X = FMath::Clamp(-1.0f, -1.0f, 1.0f); break;
-	case ELeft:Direction.Y = FMath::Clamp(-1.0f, -1.0f, 1.0f); break;
-	case ERight:Direction.Y = FMath::Clamp(1.0f, -1.0f, 1.0f); break;
-	default:break;
-	}
-	// adjust move direction
-	Direction = Direction.RotateAngleAxis(90.0f * CameraDirection, FVector(0.0f, 0.0f, 1.0f));
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("C1: %d  Direction : %f  %f"), CameraDirection, Direction.X,Direction.Y));
-}
+//void ACubePawn::ControlMove(int Action, int CameraDirection) {
+//	bMoving = true;
+//	LocationBeforeMove = GetActorLocation();
+//
+//	switch (Action) {
+//	case EForward:Direction.X = FMath::Clamp(1.0f, -1.0f, 1.0f); break;
+//	case EBack:Direction.X = FMath::Clamp(-1.0f, -1.0f, 1.0f); break;
+//	case ELeft:Direction.Y = FMath::Clamp(-1.0f, -1.0f, 1.0f); break;
+//	case ERight:Direction.Y = FMath::Clamp(1.0f, -1.0f, 1.0f); break;
+//	default:break;
+//	}
+//	// adjust move direction
+//	Direction = Direction.RotateAngleAxis(90.0f * CameraDirection, FVector(0.0f, 0.0f, 1.0f));
+//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("C1: %d  Direction : %f  %f"), CameraDirection, Direction.X,Direction.Y));
+//}
 
 bool ACubePawn::isMoveDone() {
 	return !bMoving;
