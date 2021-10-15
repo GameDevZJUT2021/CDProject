@@ -24,12 +24,6 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* StaticMeshComponent;
-
-	UPROPERTY(EditAnywhere)
-	bool bWalkable = true;
-
-	UPROPERTY(EditAnywhere)
-	EObjectTags Tag = EObjectTags::Rule;
 	
 	UPROPERTY(EditAnywhere)
 	ERuleTags TopTag;
@@ -53,7 +47,7 @@ public:
 	FVector FaceDirecion;
 	bool bMoving = false;
 
-	virtual void ControlledMove(EActions Action, ECameraAbsLocations CameraAbsLocations) override;
+	virtual bool ControlledMove(EActions Action, ECameraAbsLocations CameraAbsLocation) override;
 	virtual void IndependentMove() override;
 	virtual bool isMoveDone() override;
 

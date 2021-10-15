@@ -17,7 +17,7 @@ void AGameInfo::Init(int width, int length)
 	MapWidth = width;
 	MapLength = length;
 	MapInfo.Init(UnitInfo(), width * length);
-	RulesPool.Init("", 1);
+	//RulesPool.Init("", 1);
 
 	//scan the map to fill in the MapInfo and ActiveRules?
 }
@@ -57,5 +57,9 @@ TArray<AParentPawn*> AGameInfo::GetSelfPawns() const {
 	//			check if MapInfo[i * MapWidth + j] == SelfTag;
 	//			add into array
 	//		}
+}
+
+void AGameInfo::Update() {
+
 }
 

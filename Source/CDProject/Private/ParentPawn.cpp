@@ -30,8 +30,8 @@ void AParentPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 }
 
 
-void AParentPawn::ControlledMove(EActions Action, ECameraAbsLocations CameraAbsLocations) {
-
+bool AParentPawn::ControlledMove(EActions Action, ECameraAbsLocations CameraAbsLocation) {
+	return false;
 }
 
 void AParentPawn::IndependentMove() {

@@ -23,21 +23,15 @@ public:
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* StaticMeshComponent;
 
-	UPROPERTY(EditAnywhere)
-	bool bWalkable = true;
-
-	UPROPERTY(EditAnywhere)
-	EObjectTags Tag = EObjectTags::Baba;
-
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	const float Speed = 1.0f;
+	const float Speed = 10.0f;
 	FVector MoveDirection;
 	FVector FaceDirecion;
 	bool bMoving = false;
 
-	virtual void ControlledMove(EActions Action, ECameraAbsLocations CameraAbsLocations) override;
+	virtual bool ControlledMove(EActions Action, ECameraAbsLocations CameraAbsLocation) override;
 	virtual void IndependentMove() override;
 	virtual bool isMoveDone() override;
 

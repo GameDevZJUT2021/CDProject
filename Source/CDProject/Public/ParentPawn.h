@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "EngineUtils.h"
 #include "..\CommonEnum.h"
 #include "ParentPawn.generated.h"
 
@@ -22,10 +23,17 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY(EditAnywhere)
+	bool bWalkable = true;
+
+	UPROPERTY(EditAnywhere)
+	EObjectTags Tag = EObjectTags::Baba;
+
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	virtual void ControlledMove(EActions Action, ECameraAbsLocations CameraAbsLocations);
+	// return true if this pawn could move to destination
+	virtual bool ControlledMove(EActions Action, ECameraAbsLocations CameraAbsLocation);
 	virtual void IndependentMove();
 	virtual bool isMoveDone();
 

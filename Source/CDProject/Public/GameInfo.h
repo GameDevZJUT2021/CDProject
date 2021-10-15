@@ -6,13 +6,13 @@
 #include "GameFramework/Actor.h"
 #include "ParentPawn.h"
 #include "..\CommonEnum.h"
+#include "Containers/Map.h"
 #include "GameInfo.generated.h"
 
 struct UnitInfo
 {
 	UnitInfo() {};
 	TArray<AParentPawn*> Objects;
-	TArray<FString> ObjectTypes;
 	bool isEmpty() { return !Objects.Num(); }
 };
 
@@ -31,11 +31,12 @@ public:
 	int MapLength;
 	int MapWidth;
 	TArray	<UnitInfo> MapInfo; // 2D array. UE4 does not support 2D array naturally, so use a simple conversion instead
-	TArray<FString> ActiveRules;
-	TArray<FString> RulesPool;
+	TArray<TMultiMap<ERuleTags, ERuleTags>> ActiveRules;
+	TArray<TMultiMap<ERuleTags, ERuleTags>> RulesPool;
 
 	TArray<EObjectTags> GetSelfTags() const;
 	TArray<AParentPawn*> GetSelfPawns() const;
+	void Update();
 
 protected:
 	// Called when the game starts or when spawned

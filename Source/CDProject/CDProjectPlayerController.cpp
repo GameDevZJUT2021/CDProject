@@ -6,6 +6,7 @@
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "CDProjectCharacter.h"
 #include "EntityPawn.h"
+#include "RulePawn.h"
 #include "EngineUtils.h"
 #include "Engine/World.h"
 
@@ -16,10 +17,17 @@ ACDProjectPlayerController::ACDProjectPlayerController()
 
 }
 
+int LocationToMapIndex(float Loca_x, float Loca_y) {
+	int x = (Loca_x + (25 - 1) * 50) / 100;
+	int y = (Loca_y + (25 - 1) * 50) / 100;
+	return x * 25 + y;
+}
+
 void ACDProjectPlayerController::BeginPlay() {
 	UWorld* World = GetWorld();
 	if (World)
 	{
+		// just for test
 		// Spawn a ObserveCamera
 		FVector Location = FVector(-1800.0f, 0.0f, 1500.0f);
 		FRotator Rotation = FRotator(-50.0f, 0.0f, 0.0f);
@@ -49,9 +57,22 @@ void ACDProjectPlayerController::BeginPlay() {
 		BabaEntityPawn->Tag = EObjectTags::Baba;
 		BabaEntityPawn->bWalkable = false;
 
+		// Spawn a test Rule Pawn
+		Location = FVector(1000.0f, 200.0f, 50.0f);
+		Rotation = FRotator(0.0f, 0.0f, 0.0f);
+		ARulePawn* RulePawn = World->SpawnActor<ARulePawn>(Location, Rotation, SpawnParams);
+		RulePawn->Tag = EObjectTags::Rule;
+		RulePawn->bWalkable = false;
+
 		// Spawn GameInfo
 		MyGameInfo = World->SpawnActor<AGameInfo>();
 		MyGameInfo->Init(25, 25);
+
+		MyGameInfo->MapInfo[LocationToMapIndex(200, 0)].Objects.Init(WaterEntityPawn, 1);
+		MyGameInfo->MapInfo[LocationToMapIndex(0, 0)].Objects.Init(TreeEntityPawn, 1);
+		MyGameInfo->MapInfo[LocationToMapIndex(200, 200)].Objects.Init(BabaEntityPawn, 1);
+		MyGameInfo->MapInfo[LocationToMapIndex(1000, 200)].Objects.Init(RulePawn, 1);
+
 	}
 }
 
@@ -123,14 +144,15 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 void ACDProjectPlayerController::ProcessMoveAction(EActions Action) {
 	checkf(MyGameInfo, TEXT("we are not holding GameInfo"));
 
-	int i = 1;
+	// 测试代码
 	for (TActorIterator<AEntityPawn> iter(GetWorld()); iter; ++iter)
 	{
 		AEntityPawn* EntityPawn = *iter;
-		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString::Printf(TEXT("pawn count %d"), i++));
 		//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, EntityPawn->GetHumanReadableName());
-		EntityPawn->ControlledMove(Action, CameraAbsLocation);
+		if(EntityPawn->Tag == EObjectTags::Baba)
+			EntityPawn->ControlledMove(Action, CameraAbsLocation);
 	}
+	//应该实现的逻辑
 	//TArray<AParentPawn*> SelfPawns = MyGameInfo->GetSelfPawns();
 	//for (AParentPawn* SelfPawn : SelfPawns)
 	//	SelfPawn->ControlledMove(Action,CameraAbsLocation);
