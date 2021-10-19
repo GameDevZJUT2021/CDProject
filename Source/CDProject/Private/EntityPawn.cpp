@@ -35,12 +35,10 @@ void AEntityPawn::Tick(float DeltaTime)
 	
 	if (bMoving)
 	{
-		// 未实现:这里需要首先检测目标点的物体,从而进行相应的处理
-		// 可以利用碰撞体积来获取相应物体,或者用一张地图来存储,或是遍历所有Pawn
 		FVector NewLocation = GetActorLocation() + (MoveDirection * Speed);
 		SetActorLocation(NewLocation);
 
-		if (FVector::Dist(NewLocation, LocationBeforeMove) >= 100)
+		if (FVector::Dist(NewLocation, LocationBeforeMove) >= 99) //从100改为99,修复了有时会移动99.999还继续移动,导致位置不对的错误
 		{
 			bMoving = false;
 		}
