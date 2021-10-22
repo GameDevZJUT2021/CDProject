@@ -66,6 +66,10 @@ void AObservePawn::Tick(float DeltaTime)
 		SetActorRotation(Rotator);
 
 		RotatedAngle += RotateSpeed;
+		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString::Printf(TEXT(" %d "),RotatedAngle));
+
+		if (RotateSpeed > 3)// Rotate smoothly rather than linearly
+			RotateSpeed = RotateSpeed - 1;
 	}
 }
 
@@ -78,6 +82,7 @@ void AObservePawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AObservePawn::BeginRotate(EActions Action) {
 	bRotating = true;
+	RotateSpeed = 8.0f;
 	Action == EActions::CameraTurnLeft ? RotateDirection = 1 : RotateDirection = -1;
 }
 

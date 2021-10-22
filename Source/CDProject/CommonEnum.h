@@ -11,8 +11,8 @@ enum class ECameraAbsLocations : char
 //¹«¿ªµ½±à¼­Æ÷
 UENUM()
 enum class EObjectTags : uint8
-{ Rule, Baba, Tree, Water };
+{ Rule=0, Baba=1, Tree=2, Water=3 };
 
 UENUM()
 enum class ERuleTags : uint8
-{Baba, Tree, Water, is, You};
+{Baba=1, Tree=2, Water=3, is=200, You=101, Push=102};

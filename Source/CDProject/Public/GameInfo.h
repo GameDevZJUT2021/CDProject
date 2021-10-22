@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ParentPawn.h"
+#include "EntityPawn.h"
 #include "..\CommonEnum.h"
 #include "Containers/Map.h"
 #include "GameInfo.generated.h"
@@ -31,12 +32,14 @@ public:
 	int MapLength;
 	int MapWidth;
 	TArray	<UnitInfo> MapInfo; // 2D array. UE4 does not support 2D array naturally, so use a simple conversion instead
-	TArray<TMultiMap<ERuleTags, ERuleTags>> ActiveRules;
-	TArray<TMultiMap<ERuleTags, ERuleTags>> RulesPool;
+	TMultiMap<ERuleTags, ERuleTags> ActiveRules;
+	TMultiMap<ERuleTags, ERuleTags> RulesPool;
 
-	TArray<EObjectTags> GetSelfTags() const;
-	TArray<AParentPawn*> GetSelfPawns() const;
-	void Update();
+	TArray<EObjectTags> GetObjectTags(ERuleTags ruleTag) const;
+	TArray<AEntityPawn*> GetSelfPawns() const;
+	void UpdateMapInfo();
+	void UpdateRule(ECameraAbsLocations CameraAbsLocation);
+
 
 protected:
 	// Called when the game starts or when spawned

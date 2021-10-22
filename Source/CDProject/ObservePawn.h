@@ -27,7 +27,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	bool bRotating = false;
-	const int RotateSpeed = 3;
+	float RotateSpeed;
 	int RotateDirection;
 
 public:	

@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "ObservePawn.h"
-#include "CubePawn.h"
 #include "GameInfo.h"
 #include "CommonEnum.h"
 #include "CDProjectPlayerController.generated.h"

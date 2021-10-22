@@ -33,8 +33,9 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	// return true if this pawn could move to destination
-	virtual bool ControlledMove(EActions Action, ECameraAbsLocations CameraAbsLocation);
-	virtual void IndependentMove();
-	virtual bool isMoveDone();
+	virtual bool BeginControlledMove(EActions Action, ECameraAbsLocations CameraAbsLocation);
+	virtual bool BeginIndependentMove();
+	virtual bool BeginMove(int AbsXdirection, int AbsYdirection);
+	virtual bool isMoveDone() const;
 
 };

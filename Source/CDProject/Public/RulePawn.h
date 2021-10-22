@@ -42,16 +42,16 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+
+	virtual bool BeginControlledMove(EActions Action, ECameraAbsLocations CameraAbsLocation) override;
+	virtual bool BeginIndependentMove() override;
+	virtual bool BeginMove(int AbsXdirection, int AbsYdirection) override;
+	virtual bool isMoveDone() const override;
+
+protected:
 	const float Speed = 10.0f;
 	FVector MoveDirection;
-	FVector FaceDirecion;
 	bool bMoving = false;
-
-	virtual bool ControlledMove(EActions Action, ECameraAbsLocations CameraAbsLocation) override;
-	virtual void IndependentMove() override;
-	virtual bool isMoveDone() override;
-
-private:
 	FVector LocationBeforeMove;
 	
 };
