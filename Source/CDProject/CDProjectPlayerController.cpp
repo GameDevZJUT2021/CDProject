@@ -118,7 +118,18 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 				bOperatingAction = false;
 				MyGameInfo->UpdateMapInfo();
 				MyGameInfo->UpdateRule(CameraAbsLocation);
-				//WinJudge();
+				if (MyGameInfo->WinJudge())
+				{
+					// 弹出胜利窗口
+					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString(TEXT("You Win")));
+
+				}
+				if (MyGameInfo->DefeatJudge())
+				{
+					// 弹出失败窗口
+					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("You Lose")));
+
+				}
 			}
 			break;
 
@@ -129,7 +140,18 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 				UpdateCameraAbsLocation(Action);
 				bOperatingAction = false;
 				MyGameInfo->UpdateRule(CameraAbsLocation);
-				//WinJudge();
+				if (MyGameInfo->WinJudge())
+				{
+					// 弹出胜利窗口
+					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString(TEXT("You Win")));
+
+				}
+				if (MyGameInfo->DefeatJudge())
+				{
+					// 弹出失败窗口
+					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("You Lose")));
+
+				}
 			}
 			break;
 

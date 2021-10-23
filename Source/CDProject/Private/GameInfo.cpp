@@ -30,7 +30,12 @@ void AGameInfo::Init(int width, int length)
 	RulesPool.Add(ERuleTags::Push, ERuleTags::Baba);
 	RulesPool.Add(ERuleTags::Push, ERuleTags::Tree);
 	RulesPool.Add(ERuleTags::Push, ERuleTags::Water);
-
+	RulesPool.Add(ERuleTags::Win, ERuleTags::Baba);
+	RulesPool.Add(ERuleTags::Win, ERuleTags::Tree);
+	RulesPool.Add(ERuleTags::Win, ERuleTags::Water);
+	RulesPool.Add(ERuleTags::Defeat, ERuleTags::Baba);
+	RulesPool.Add(ERuleTags::Defeat, ERuleTags::Tree);
+	RulesPool.Add(ERuleTags::Defeat, ERuleTags::Water);
 
 
 	//RulesPool.Init("", 1);
@@ -356,3 +361,48 @@ void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 		}
 	}
 }
+
+bool AGameInfo::WinJudge() {
+	TArray<EObjectTags> WinPawnTags = GetObjectTags(ERuleTags::Win);
+	TArray<EObjectTags> YouPawnTags = GetObjectTags(ERuleTags::You);
+
+
+	for (UnitInfo unitInfo : MapInfo)
+	{
+		bool bWin = false, bYou = false;
+		for (AParentPawn* pPawn : unitInfo.Objects)
+		{
+			if (WinPawnTags.Find(pPawn->Tag) != INDEX_NONE)
+				bWin = true;
+			if (YouPawnTags.Find(pPawn->Tag) != INDEX_NONE)
+				bYou = true;
+ 		}
+		if (bWin && bYou)
+			return true;
+	}
+
+	return false;
+}
+
+bool AGameInfo::DefeatJudge() {
+	TArray<EObjectTags> DefeatPawnTags = GetObjectTags(ERuleTags::Defeat);
+	TArray<EObjectTags> YouPawnTags = GetObjectTags(ERuleTags::You);
+
+
+	for (UnitInfo unitInfo : MapInfo)
+	{
+		bool bDefeat = false, bYou = false;
+		for (AParentPawn* pPawn : unitInfo.Objects)
+		{
+			if (DefeatPawnTags.Find(pPawn->Tag) != INDEX_NONE)
+				bDefeat = true;
+			if (YouPawnTags.Find(pPawn->Tag) != INDEX_NONE)
+				bYou = true;
+		}
+		if (bDefeat && bYou)
+			return true;
+	}
+
+	return false;
+}
+

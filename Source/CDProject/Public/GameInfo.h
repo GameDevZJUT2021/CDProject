@@ -40,6 +40,8 @@ public:
 	void UpdateMapInfo();
 	void UpdateRule(ECameraAbsLocations CameraAbsLocation);
 
+	bool WinJudge();
+	bool DefeatJudge();
 
 protected:
 	// Called when the game starts or when spawned

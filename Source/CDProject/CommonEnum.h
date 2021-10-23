@@ -15,4 +15,4 @@ enum class EObjectTags : uint8
 
 UENUM()
 enum class ERuleTags : uint8
-{Baba=1, Tree=2, Water=3, is=200, You=101, Push=102};
+{Baba=1, Tree=2, Water=3, is=200, You=101, Push=102, Win=103, Defeat=104};
