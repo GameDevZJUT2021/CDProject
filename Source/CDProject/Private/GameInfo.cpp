@@ -114,6 +114,87 @@ void AGameInfo::UpdateMapInfo() {
 	}
 }
 
+bool AGameInfo::RuleIsVisible(ECameraAbsLocations CameraAbsLocation, TArray<int> MapInfo_X, TArray<int> MapInfo_Y, int CurrentIndex)
+{
+	if (CameraAbsLocation == ECameraAbsLocations::South)
+	{
+		if (MapInfo_X[CurrentIndex] != 0)
+		{
+			for (int j = 0; j < MapInfo_X.Num();j++)
+			{
+				if (MapInfo_X[j] == MapInfo_X[CurrentIndex] - 1)
+				{
+					if (MapInfo_Y[j] == MapInfo_Y[CurrentIndex] - 1)
+						return false;
+					else if (MapInfo_Y[j] == MapInfo_Y[CurrentIndex])
+						return false;
+					else if (MapInfo_Y[j] == MapInfo_Y[CurrentIndex] + 1)
+						return false;
+				}
+			}
+		}
+		return true;
+	}
+	else if (CameraAbsLocation == ECameraAbsLocations::North)
+	{
+		if (MapInfo_X[CurrentIndex] != MapWidth - 1)
+		{
+			for (int j = 0; j < MapInfo_X.Num();j++)
+			{
+				if (MapInfo_X[j] == MapInfo_X[CurrentIndex] + 1)
+				{
+					if (MapInfo_Y[j] == MapInfo_Y[CurrentIndex] - 1)
+						return false;
+					else if (MapInfo_Y[j] == MapInfo_Y[CurrentIndex])
+						return false;
+					else if (MapInfo_Y[j] == MapInfo_Y[CurrentIndex] + 1)
+						return false;
+				}
+			}
+		}
+		return true;
+	}
+	else if (CameraAbsLocation == ECameraAbsLocations::West)
+	{
+		if (MapInfo_Y[CurrentIndex] != 0)
+		{
+			for (int j = 0; j < MapInfo_Y.Num();j++)
+			{
+				if (MapInfo_Y[j] == MapInfo_Y[CurrentIndex] - 1)
+				{
+					if (MapInfo_X[j] == MapInfo_X[CurrentIndex] - 1)
+						return false;
+					else if (MapInfo_X[j] == MapInfo_X[CurrentIndex])
+						return false;
+					else if (MapInfo_X[j] == MapInfo_X[CurrentIndex] + 1)
+						return false;
+				}
+			}
+		}
+		return true;
+	}
+	else if (CameraAbsLocation == ECameraAbsLocations::East)
+	{
+		if (MapInfo_Y[CurrentIndex] != MapLength - 1)
+		{
+			for (int j = 0; j < MapInfo_Y.Num();j++)
+			{
+				if (MapInfo_Y[j] == MapInfo_Y[CurrentIndex] + 1)
+				{
+					if (MapInfo_X[j] == MapInfo_X[CurrentIndex] - 1)
+						return false;
+					else if (MapInfo_X[j] == MapInfo_X[CurrentIndex])
+						return false;
+					else if (MapInfo_X[j] == MapInfo_X[CurrentIndex] + 1)
+						return false;
+				}
+			}
+		}
+		return true;
+	}
+	return false;
+}
+
 void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 	ActiveRules.Empty();
 	TArray<int> MapInfo_X, MapInfo_Y;
@@ -178,7 +259,6 @@ void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 			// 东西方向
 			if (MapInfo_Y[i] != 0 && MapInfo_Y[i] != MapLength - 1)
 			{
-				bool bVisible = 1;
 				bool bWestExist = 0, bEastExist = 0;
 				ARulePawn* HorizontalFirstRulePawn = nullptr, * HorizontalLastRulePawn = nullptr;
 				for (int j = 0; j < MapInfo_Y.Num(); j++)
@@ -210,14 +290,7 @@ void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 						if (CameraAbsLocation == ECameraAbsLocations::South) {
 							if (RulePawnArray[i]->SouthTag == ERuleTags::is) {
 								// 检测south面规则是否被遮挡
-								if (!MapInfo[(MapInfo_X[i] - 1) * MapWidth + MapInfo_Y[i]].isEmpty())
-									bVisible = 0;
-								if (!MapInfo[(MapInfo_X[i] - 1) * MapWidth + MapInfo_Y[i] - 1].isEmpty())
-									bVisible = 0;
-								if (!MapInfo[(MapInfo_X[i] - 1) * MapWidth + MapInfo_Y[i] + 1].isEmpty())
-									bVisible = 0;
-
-								if (bVisible)
+								if (RuleIsVisible(ECameraAbsLocations::South, MapInfo_X, MapInfo_Y, i))
 								{
 									if (RulesPool.FindPair(HorizontalLastRulePawn->SouthTag, HorizontalFirstRulePawn->SouthTag))
 										ActiveRules.Add(HorizontalLastRulePawn->SouthTag, HorizontalFirstRulePawn->SouthTag);
@@ -227,14 +300,7 @@ void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 						else if (CameraAbsLocation == ECameraAbsLocations::North) {
 							if (RulePawnArray[i]->NorthTag == ERuleTags::is) {
 								//检测north面规则是否被遮挡
-								if (!MapInfo[(MapInfo_X[i] + 1) * MapWidth + MapInfo_Y[i]].isEmpty())
-									bVisible = 0;
-								if (!MapInfo[(MapInfo_X[i] + 1) * MapWidth + MapInfo_Y[i] - 1].isEmpty())
-									bVisible = 0;
-								if (!MapInfo[(MapInfo_X[i] + 1) * MapWidth + MapInfo_Y[i] + 1].isEmpty())
-									bVisible = 0;
-
-								if (bVisible)
+								if (RuleIsVisible(ECameraAbsLocations::North, MapInfo_X, MapInfo_Y, i))
 								{
 									if (RulesPool.FindPair(HorizontalFirstRulePawn->NorthTag, HorizontalLastRulePawn->NorthTag))
 										ActiveRules.Add(HorizontalFirstRulePawn->NorthTag, HorizontalLastRulePawn->NorthTag);
@@ -291,7 +357,6 @@ void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 			if (MapInfo_X[i] != 0 && MapInfo_X[i] != MapWidth - 1)
 			{
 				bool bSouthExist = 0, bNorthExist = 0;
-				bool bVisible = 1;
 				ARulePawn* HorizontalFirstRulePawn = nullptr, * HorizontalLastRulePawn = nullptr;
 				for (int j = 0; j < MapInfo_X.Num(); j++)
 				{
@@ -323,14 +388,7 @@ void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 							if (RulePawnArray[i]->WestTag == ERuleTags::is)
 							{
 								//检测West面规则是否被遮挡
-								if (!MapInfo[(MapInfo_X[i] + 1) * MapWidth + MapInfo_Y[i] - 1].isEmpty())
-									bVisible = 0;
-								if (!MapInfo[(MapInfo_X[i]) * MapWidth + MapInfo_Y[i] - 1].isEmpty())
-									bVisible = 0;
-								if (!MapInfo[(MapInfo_X[i] - 1) * MapWidth + MapInfo_Y[i] - 1].isEmpty())
-									bVisible = 0;
-
-								if (bVisible)
+								if (RuleIsVisible(ECameraAbsLocations::West, MapInfo_X, MapInfo_Y, i))
 								{
 									if (RulesPool.FindPair(HorizontalLastRulePawn->WestTag, HorizontalFirstRulePawn->WestTag))
 										ActiveRules.Add(HorizontalLastRulePawn->WestTag, HorizontalFirstRulePawn->WestTag);
@@ -342,14 +400,7 @@ void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 							if (RulePawnArray[i]->EastTag == ERuleTags::is)
 							{
 								//检测East面规则是否被遮挡
-								if (!MapInfo[(MapInfo_X[i] + 1) * MapWidth + MapInfo_Y[i] + 1].isEmpty())
-									bVisible = 0;
-								if (!MapInfo[(MapInfo_X[i]) * MapWidth + MapInfo_Y[i] + 1].isEmpty())
-									bVisible = 0;
-								if (!MapInfo[(MapInfo_X[i] - 1) * MapWidth + MapInfo_Y[i] + 1].isEmpty())
-									bVisible = 0;
-
-								if (bVisible)
+								if (RuleIsVisible(ECameraAbsLocations::East, MapInfo_X, MapInfo_Y, i))
 									if (RulesPool.FindPair(HorizontalFirstRulePawn->EastTag, HorizontalLastRulePawn->EastTag))
 										ActiveRules.Add(HorizontalFirstRulePawn->EastTag, HorizontalLastRulePawn->EastTag);
 							}

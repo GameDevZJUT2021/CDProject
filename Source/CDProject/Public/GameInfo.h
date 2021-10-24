@@ -51,4 +51,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+private:
+	bool RuleIsVisible(ECameraAbsLocations CameraAbsLocation, TArray<int> MapInfo_X, TArray<int> MapInfo_Y, int CurrentIndex);
 };
