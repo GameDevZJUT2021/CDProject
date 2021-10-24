@@ -40,8 +40,8 @@ public:
 	void UpdateMapInfo();
 	void UpdateRule(ECameraAbsLocations CameraAbsLocation);
 
-	bool WinJudge();
-	bool DefeatJudge();
+	bool WinJudge() const;
+	bool DefeatJudge() const;
 
 protected:
 	// Called when the game starts or when spawned
@@ -52,5 +52,5 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	bool RuleIsVisible(ECameraAbsLocations CameraAbsLocation, TArray<int> MapInfo_X, TArray<int> MapInfo_Y, int CurrentIndex);
+	bool RuleIsVisible(ECameraAbsLocations CameraAbsLocation,const TArray<int>& MapInfo_X, const TArray<int> &MapInfo_Y, int CurrentIndex);
 };

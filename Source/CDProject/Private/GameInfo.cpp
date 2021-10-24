@@ -114,7 +114,7 @@ void AGameInfo::UpdateMapInfo() {
 	}
 }
 
-bool AGameInfo::RuleIsVisible(ECameraAbsLocations CameraAbsLocation, TArray<int> MapInfo_X, TArray<int> MapInfo_Y, int CurrentIndex)
+bool AGameInfo::RuleIsVisible(ECameraAbsLocations CameraAbsLocation, const TArray<int>& MapInfo_X, const TArray<int>& MapInfo_Y, int CurrentIndex)
 {
 	if (CameraAbsLocation == ECameraAbsLocations::South)
 	{
@@ -413,7 +413,7 @@ void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 	}
 }
 
-bool AGameInfo::WinJudge() {
+bool AGameInfo::WinJudge() const{
 	TArray<EObjectTags> WinPawnTags = GetObjectTags(ERuleTags::Win);
 	TArray<EObjectTags> YouPawnTags = GetObjectTags(ERuleTags::You);
 
@@ -435,7 +435,7 @@ bool AGameInfo::WinJudge() {
 	return false;
 }
 
-bool AGameInfo::DefeatJudge() {
+bool AGameInfo::DefeatJudge() const{
 	TArray<EObjectTags> DefeatPawnTags = GetObjectTags(ERuleTags::Defeat);
 	TArray<EObjectTags> YouPawnTags = GetObjectTags(ERuleTags::You);
 
