@@ -35,7 +35,7 @@ public:
 
 	virtual bool BeginControlledMove(EActions Action, ECameraAbsLocations CameraAbsLocation) override;
 	virtual bool BeginIndependentMove() override;
-	virtual bool BeginMove(int AbsXdirection, int AbsYdirection) override;
+	virtual bool BeginMove(int AbsXdirection, int AbsYdirection, bool ControlledOrIndenpent =1) override;
 	virtual bool isMoveDone() const override;
 
 protected:

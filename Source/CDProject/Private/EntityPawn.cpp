@@ -69,7 +69,8 @@ bool AEntityPawn::BeginIndependentMove() {
 		return false;
 
 	// 遇到障碍,回头
-	if (BeginMove(FMath::RoundToInt(FaceDirection.X), FMath::RoundToInt(FaceDirection.Y)) == false)
+	// 第三个参数为0,提示BeginMove调用者为IndependentMove
+	if (BeginMove(FMath::RoundToInt(FaceDirection.X), FMath::RoundToInt(FaceDirection.Y), 0) == false)
 	{
 		FaceDirection.X = -FaceDirection.X;
 		FaceDirection.Y = -FaceDirection.Y;
@@ -78,7 +79,7 @@ bool AEntityPawn::BeginIndependentMove() {
 	return true;
 }
 
-bool AEntityPawn::BeginMove(int AbsXdirection, int AbsYdirection) {
+bool AEntityPawn::BeginMove(int AbsXdirection, int AbsYdirection, bool ControlledOrIndenpent) {
 	// get GameInfo
 	TActorIterator<AGameInfo> iter(GetWorld());
 	checkf(iter, TEXT("There is no gameinfo"));
@@ -120,7 +121,13 @@ bool AEntityPawn::BeginMove(int AbsXdirection, int AbsYdirection) {
 
 	UnitInfo DestUnitInfo = TempGameInfo->MapInfo[dest_x * Width + dest_y];
 	// destination is not vacant
-	TArray<EObjectTags> selfTags = TempGameInfo->GetObjectTags(ERuleTags::You);
+	
+	TArray<EObjectTags> CurrentMoveTags;
+	if(ControlledOrIndenpent == 1)
+		CurrentMoveTags = TempGameInfo->GetObjectTags(ERuleTags::You);
+	else
+		CurrentMoveTags = TempGameInfo->GetObjectTags(ERuleTags::Move);
+
 	TArray<EObjectTags> pushPawnTags = TempGameInfo->GetObjectTags(ERuleTags::Push);
 	this;// just for debug
 	if (!DestUnitInfo.isEmpty())
@@ -134,7 +141,7 @@ bool AEntityPawn::BeginMove(int AbsXdirection, int AbsYdirection) {
 					return false;
 			}
 			// test if the pawn at destination can walk by itself
-			else if (selfTags.Find(pawn->Tag) != INDEX_NONE)
+			else if (CurrentMoveTags.Find(pawn->Tag) != INDEX_NONE)
 			{
 				if (!pawn->BeginMove(AbsXdirection, AbsYdirection))// the pawn at destination can not walk by itself
 				{

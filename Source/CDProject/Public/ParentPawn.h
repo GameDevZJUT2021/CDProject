@@ -35,7 +35,7 @@ public:
 	// return true if this pawn could move to destination
 	virtual bool BeginControlledMove(EActions Action, ECameraAbsLocations CameraAbsLocation);
 	virtual bool BeginIndependentMove();
-	virtual bool BeginMove(int AbsXdirection, int AbsYdirection);
+	virtual bool BeginMove(int AbsXdirection, int AbsYdirection, bool ControlledOrIndenpent = 1);
 	virtual bool isMoveDone() const;
 
 };

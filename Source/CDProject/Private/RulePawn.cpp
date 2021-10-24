@@ -73,7 +73,7 @@ bool ARulePawn::BeginIndependentMove() {
 	return false;
 }
 
-bool ARulePawn::BeginMove(int AbsXdirection, int AbsYdirection) {
+bool ARulePawn::BeginMove(int AbsXdirection, int AbsYdirection, bool ControlledOrIndenpent) {
 	// get GameInfo
 	TActorIterator<AGameInfo> iter(GetWorld());
 	checkf(iter, TEXT("There is no gameinfo"));

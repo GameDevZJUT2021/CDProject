@@ -42,6 +42,6 @@ bool AParentPawn::isMoveDone() const {
 	return true;
 }
 
-bool AParentPawn::BeginMove(int AbsXdirection, int AbsYdirection){
+bool AParentPawn::BeginMove(int AbsXdirection, int AbsYdirection, bool ControlledOrIndenpent){
 	return false;
 }
