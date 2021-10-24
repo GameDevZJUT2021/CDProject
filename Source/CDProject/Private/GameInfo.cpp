@@ -36,6 +36,10 @@ void AGameInfo::Init(int width, int length)
 	RulesPool.Add(ERuleTags::Defeat, ERuleTags::Baba);
 	RulesPool.Add(ERuleTags::Defeat, ERuleTags::Tree);
 	RulesPool.Add(ERuleTags::Defeat, ERuleTags::Water);
+	RulesPool.Add(ERuleTags::Move, ERuleTags::Baba);
+	RulesPool.Add(ERuleTags::Move, ERuleTags::Tree);
+	RulesPool.Add(ERuleTags::Move, ERuleTags::Water);
+
 
 
 	//RulesPool.Init("", 1);
@@ -73,9 +77,8 @@ TArray<EObjectTags> AGameInfo::GetObjectTags(ERuleTags ruleTag) const {
 }
 	
 
-// Œ¥ µœ÷
 TArray<AEntityPawn*> AGameInfo::GetSelfPawns() const {
-	TArray<AEntityPawn*> SelfPawns;
+	TArray<AEntityPawn*> pSelfPawns;
 	TArray<EObjectTags> objectTags;
 	objectTags = GetObjectTags(ERuleTags::You);
 	
@@ -83,13 +86,31 @@ TArray<AEntityPawn*> AGameInfo::GetSelfPawns() const {
 	{
 		for (TActorIterator<AEntityPawn> iter(GetWorld()); iter; ++iter)
 		{
-			AEntityPawn* EntityPawn = *iter;
-			if (EntityPawn->Tag == objectTags[i])
-				SelfPawns.Push(EntityPawn);
+			AEntityPawn* pEntityPawn = *iter;
+			if (pEntityPawn->Tag == objectTags[i])
+				pSelfPawns.Push(pEntityPawn);
 		}
 	}
 
-	return SelfPawns;
+	return pSelfPawns;
+}
+
+TArray<AEntityPawn*> AGameInfo::GetMovePawns() const {
+	TArray<AEntityPawn*> pMovePawns;
+	TArray<EObjectTags> objectTags;
+	objectTags = GetObjectTags(ERuleTags::Move);
+
+	for (int i = 0; i < objectTags.Num(); i++)
+	{
+		for (TActorIterator<AEntityPawn> iter(GetWorld()); iter; ++iter)
+		{
+			AEntityPawn* pEntityPawn = *iter;
+			if (pEntityPawn->Tag == objectTags[i])
+				pMovePawns.Push(pEntityPawn);
+		}
+	}
+
+	return pMovePawns;
 }
 
 void AGameInfo::UpdateMapInfo() {
@@ -114,7 +135,7 @@ void AGameInfo::UpdateMapInfo() {
 	}
 }
 
-bool AGameInfo::RuleIsVisible(ECameraAbsLocations CameraAbsLocation, const TArray<int>& MapInfo_X, const TArray<int>& MapInfo_Y, int CurrentIndex)
+bool AGameInfo::RuleIsVisible(ECameraAbsLocations CameraAbsLocation, const TArray<int>& MapInfo_X, const TArray<int>& MapInfo_Y, int CurrentIndex) const
 {
 	if (CameraAbsLocation == ECameraAbsLocations::South)
 	{

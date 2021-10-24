@@ -64,7 +64,18 @@ bool AEntityPawn::BeginControlledMove(EActions Action, ECameraAbsLocations Camer
 }
 
 bool AEntityPawn::BeginIndependentMove() {
-	return BeginMove(FMath::RoundToInt(FaceDirection.X), FMath::RoundToInt(FaceDirection.Y));
+	// 已经在BeginControlledMove中设置过移动,不再移动
+	if (bMoving)
+		return false;
+
+	// 遇到障碍,回头
+	if (BeginMove(FMath::RoundToInt(FaceDirection.X), FMath::RoundToInt(FaceDirection.Y)) == false)
+	{
+		FaceDirection.X = -FaceDirection.X;
+		FaceDirection.Y = -FaceDirection.Y;
+	}
+
+	return true;
 }
 
 bool AEntityPawn::BeginMove(int AbsXdirection, int AbsYdirection) {

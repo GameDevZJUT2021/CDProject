@@ -26,6 +26,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	bool haveFace = 1;
 
+	UPROPERTY(EditAnywhere)
+	FVector FaceDirection = FVector(0.0f, -1.0f, 0.0f);
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -38,7 +41,6 @@ public:
 protected:
 	const float Speed = 10.0f;
 	FVector MoveDirection;
-	FVector FaceDirection = FVector(0.0f, -1.0f, 0.0f);
 	bool bMoving = false;
 	FVector LocationBeforeMove;
 

@@ -90,6 +90,7 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 			case EActions::Back:
 			case EActions::Left:
 			case EActions::Right:
+			case EActions::Wait:
 				ProcessMoveAction(Action);
 				break;
 
@@ -113,9 +114,11 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 		case EActions::Back:
 		case EActions::Left:
 		case EActions::Right:
+		case EActions::Wait:
 			if (ProcessMoveActionDone())
 			{
 				bOperatingAction = false;
+				bWaiting = false;
 				MyGameInfo->UpdateMapInfo();
 				MyGameInfo->UpdateRule(CameraAbsLocation);
 				if (MyGameInfo->WinJudge())
@@ -165,23 +168,24 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 void ACDProjectPlayerController::ProcessMoveAction(EActions Action) {
 	checkf(MyGameInfo, TEXT("we are not holding GameInfo"));
 
-	TArray<AEntityPawn*> SelfPawns = MyGameInfo->GetSelfPawns();
+	TArray<AEntityPawn*> pYouPawns = MyGameInfo->GetSelfPawns();
+	TArray<AEntityPawn*> pMovePawns = MyGameInfo->GetMovePawns();
 	
-	if (SelfPawns.Num() == 0)
+	// Ê§È¥²Ù¿Ø
+	if (pYouPawns.Num() == 0  && pMovePawns.Num() == 0)
 	{
 		// µ¯³öÊ§°Ü´°¿Ú
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("You Lose")));
 
 	}
 
+	if(!bWaiting)
+		for(AEntityPawn*  pYouPawn : pYouPawns)
+			pYouPawn->BeginControlledMove(Action, CameraAbsLocation);
+	
+	for (AEntityPawn* pMovePawn : pMovePawns)
+		pMovePawn->BeginIndependentMove();
 
-	for(AEntityPawn*  SelfPawn : SelfPawns)
-		SelfPawn->BeginControlledMove(Action, CameraAbsLocation);
-
-
-	//TArray<AParentPawn*> SelfPawns = MyGameInfo->GetMovePawns();
-	//for (AParentPawn* SelfPawn : SelfPawns)
-	//	SelfPawn->BeginIndependentMove(Action);
 }
 
 
@@ -215,6 +219,8 @@ void ACDProjectPlayerController::SetupInputComponent()
 	InputComponent->BindAction("MoveLeft", IE_Pressed, this, &ACDProjectPlayerController::OnMoveLeft);
 	InputComponent->BindAction("MoveRight", IE_Pressed, this, &ACDProjectPlayerController::OnMoveRight);
 
+	InputComponent->BindAction("Wait", IE_Pressed, this, &ACDProjectPlayerController::OnWait);
+
 	InputComponent->BindAction("CameraTurnLeft", IE_Pressed, this, &ACDProjectPlayerController::OnCameraTurnLeft);
 	InputComponent->BindAction("CameraTurnRight", IE_Pressed, this, &ACDProjectPlayerController::OnCameraTurnRight);
 }
@@ -238,6 +244,12 @@ void ACDProjectPlayerController::OnMoveLeft() {
 void ACDProjectPlayerController::OnMoveRight() {
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString(TEXT("Move Right")));
 	ActionQueue.Enqueue(EActions::Right);
+}
+
+void ACDProjectPlayerController::OnWait() {
+	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString(TEXT("Wait")));
+	bWaiting = true;
+	ActionQueue.Enqueue(EActions::Wait);
 }
 
 void ACDProjectPlayerController::OnCameraTurnLeft() {

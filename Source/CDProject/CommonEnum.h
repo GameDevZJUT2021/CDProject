@@ -2,7 +2,7 @@
 #include "UObject/Class.h"
 
 enum class EActions : char
-{ Forward, Back, Left, Right, CameraTurnLeft, CameraTurnRight };
+{ Forward, Back, Left, Right, Wait, CameraTurnLeft, CameraTurnRight };
 
 //游戏开始时下方为South,以此类推
 enum class ECameraAbsLocations : char
@@ -15,4 +15,4 @@ enum class EObjectTags : uint8
 
 UENUM()
 enum class ERuleTags : uint8
-{Baba=1, Tree=2, Water=3, is=200, You=101, Push=102, Win=103, Defeat=104};
+{Null=0, Baba=1, Tree=2, Water=3, is=200, You=101, Push=102, Win=103, Defeat=104, Move=105, Sink=106};

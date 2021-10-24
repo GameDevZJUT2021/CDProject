@@ -19,7 +19,8 @@ public:
 
 protected:
 	TQueue<EActions> ActionQueue;
-	bool bOperatingAction = 0;
+	bool bOperatingAction = false;
+	bool bWaiting = false;
 
 	ECameraAbsLocations CameraAbsLocation = ECameraAbsLocations::South;
 
@@ -43,6 +44,8 @@ protected:
 	void OnMoveRight();
 	void OnMoveForward();
 	void OnMoveBack();
+
+	void OnWait();
 
 	void OnCameraTurnLeft();
 	void OnCameraTurnRight();

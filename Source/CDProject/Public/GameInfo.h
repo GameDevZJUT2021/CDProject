@@ -37,6 +37,8 @@ public:
 
 	TArray<EObjectTags> GetObjectTags(ERuleTags ruleTag) const;
 	TArray<AEntityPawn*> GetSelfPawns() const;
+	TArray<AEntityPawn*> GetMovePawns() const;
+
 	void UpdateMapInfo();
 	void UpdateRule(ECameraAbsLocations CameraAbsLocation);
 
@@ -52,5 +54,5 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	bool RuleIsVisible(ECameraAbsLocations CameraAbsLocation,const TArray<int>& MapInfo_X, const TArray<int> &MapInfo_Y, int CurrentIndex);
+	bool RuleIsVisible(ECameraAbsLocations CameraAbsLocation,const TArray<int>& MapInfo_X, const TArray<int> &MapInfo_Y, int CurrentIndex) const;
 };
