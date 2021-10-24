@@ -120,7 +120,7 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 				MyGameInfo->UpdateRule(CameraAbsLocation);
 				if (MyGameInfo->WinJudge())
 				{
-					// 弹出胜利窗口
+					// 弹出胜利窗口:待实现
 					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString(TEXT("You Win")));
 
 				}
@@ -167,8 +167,13 @@ void ACDProjectPlayerController::ProcessMoveAction(EActions Action) {
 
 	TArray<AEntityPawn*> SelfPawns = MyGameInfo->GetSelfPawns();
 	
-	//if(SelfPawns.Num() == 0)
-		//lose();
+	if (SelfPawns.Num() == 0)
+	{
+		// 弹出失败窗口
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("You Lose")));
+
+	}
+
 
 	for(AEntityPawn*  SelfPawn : SelfPawns)
 		SelfPawn->BeginControlledMove(Action, CameraAbsLocation);
