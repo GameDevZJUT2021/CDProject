@@ -168,6 +168,9 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 void ACDProjectPlayerController::ProcessMoveAction(EActions Action) {
 	checkf(MyGameInfo, TEXT("we are not holding GameInfo"));
 
+	if (Action == EActions::Wait)
+		bWaiting = true;
+
 	TArray<AEntityPawn*> pYouPawns = MyGameInfo->GetSelfPawns();
 	TArray<AEntityPawn*> pMovePawns = MyGameInfo->GetMovePawns();
 	

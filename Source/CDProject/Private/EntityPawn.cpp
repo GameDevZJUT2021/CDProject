@@ -80,6 +80,14 @@ bool AEntityPawn::BeginIndependentMove() {
 }
 
 bool AEntityPawn::BeginMove(int AbsXdirection, int AbsYdirection, bool ControlledOrIndenpent) {
+	// AbsXdirection and AbsYdirection are not supposed to be 0 at the same time
+	if (AbsXdirection == 0 && AbsYdirection == 0)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("something wrong!!!"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, this->GetHumanReadableName());
+		return true;
+	}
+	
 	// get GameInfo
 	TActorIterator<AGameInfo> iter(GetWorld());
 	checkf(iter, TEXT("There is no gameinfo"));
@@ -137,13 +145,13 @@ bool AEntityPawn::BeginMove(int AbsXdirection, int AbsYdirection, bool Controlle
 			// rule pawn could be pushed
 			if (pawn->Tag == EObjectTags::Rule)
 			{
-				if (!pawn->BeginMove(AbsXdirection,AbsYdirection))
+				if (!pawn->BeginMove(AbsXdirection,AbsYdirection, ControlledOrIndenpent))
 					return false;
 			}
 			// test if the pawn at destination can walk by itself
 			else if (CurrentMoveTags.Find(pawn->Tag) != INDEX_NONE)
 			{
-				if (!pawn->BeginMove(AbsXdirection, AbsYdirection))// the pawn at destination can not walk by itself
+				if (!pawn->BeginMove(AbsXdirection, AbsYdirection, ControlledOrIndenpent))// the pawn at destination can not walk by itself
 				{
 					// test if we can walk on it
 					if (!pawn->bWalkable && !this->bWalkable)
@@ -153,7 +161,7 @@ bool AEntityPawn::BeginMove(int AbsXdirection, int AbsYdirection, bool Controlle
 			// test if the pawn at destination can be pushed
 			else if (pushPawnTags.Find(pawn->Tag) != INDEX_NONE)
 			{
-				if (!pawn->BeginMove(AbsXdirection, AbsYdirection))
+				if (!pawn->BeginMove(AbsXdirection, AbsYdirection, ControlledOrIndenpent))
 					return false;
 			}
 			// destination has a pawn that we can not walk on

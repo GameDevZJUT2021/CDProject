@@ -101,7 +101,12 @@ bool ARulePawn::BeginMove(int AbsXdirection, int AbsYdirection, bool ControlledO
 
 	UnitInfo DestUnitInfo = TempGameInfo->MapInfo[dest_x * Width + dest_y];
 	// destination is not vacant
-	TArray<EObjectTags> selfTags = TempGameInfo->GetObjectTags(ERuleTags::You);
+	TArray<EObjectTags> CurrentMoveTags;
+	if (ControlledOrIndenpent == 1)
+		CurrentMoveTags = TempGameInfo->GetObjectTags(ERuleTags::You);
+	else
+		CurrentMoveTags = TempGameInfo->GetObjectTags(ERuleTags::Move);
+
 	TArray<EObjectTags> pushPawnTags = TempGameInfo->GetObjectTags(ERuleTags::Push);
 	this;// just for debug
 	if (!DestUnitInfo.isEmpty())
@@ -111,13 +116,13 @@ bool ARulePawn::BeginMove(int AbsXdirection, int AbsYdirection, bool ControlledO
 			// rule pawn could be pushed
 			if (pawn->Tag == EObjectTags::Rule)
 			{
-				if (!pawn->BeginMove(AbsXdirection, AbsYdirection))
+				if (!pawn->BeginMove(AbsXdirection, AbsYdirection, ControlledOrIndenpent))
 					return false;
 			}
 			// test if the pawn at destination can walk by itself
-			else if (selfTags.Find(pawn->Tag) != INDEX_NONE)
+			else if (CurrentMoveTags.Find(pawn->Tag) != INDEX_NONE)
 			{
-				if (!pawn->BeginMove(AbsXdirection, AbsYdirection))// the pawn at destination can not walk by itself
+				if (!pawn->BeginMove(AbsXdirection, AbsYdirection, ControlledOrIndenpent))// the pawn at destination can not walk by itself
 				{
 					// test if we can walk on it
 					if (!pawn->bWalkable && !this->bWalkable)
@@ -127,7 +132,7 @@ bool ARulePawn::BeginMove(int AbsXdirection, int AbsYdirection, bool ControlledO
 			// test if the pawn at destination can be pushed
 			else if (pushPawnTags.Find(pawn->Tag) != INDEX_NONE)
 			{
-				if (!pawn->BeginMove(AbsXdirection, AbsYdirection))
+				if (!pawn->BeginMove(AbsXdirection, AbsYdirection, ControlledOrIndenpent))
 					return false;
 			}
 			// destination has a pawn that we can not walk on
