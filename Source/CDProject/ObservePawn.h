@@ -23,9 +23,11 @@ public:
 
 	// Activate this camera when cinematic is played
 	UPROPERTY(VisibleAnywhere)
-	bool bActivate = 0;
+	bool bActivate = 1;
 	UFUNCTION(BlueprintCallable)
 	void Activate();
+	UFUNCTION(BlueprintCallable)
+	void InActivate();
 
 	FVector RotateAxis = FVector(0.0f, 0.0f, 1.0f);
 
