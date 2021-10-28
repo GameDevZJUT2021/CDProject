@@ -90,3 +90,6 @@ bool AObservePawn::isRotateDone() {
 	return !bRotating;
 }
 
+void AObservePawn::Activate() {
+	bActivate = 1;
+}
