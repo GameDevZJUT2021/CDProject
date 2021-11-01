@@ -20,10 +20,10 @@ void ACDProjectPlayerController::BeginPlay() {
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		// Spawn a ObserveCamera
-		FVector Location = FVector(-1800.0f, 0.0f, 1500.0f);
-		FRotator Rotation = FRotator(-50.0f, 0.0f, 0.0f);
-		MyObservePawn = World->SpawnActor<AObservePawn>(Location, Rotation);
+		// Obtain a ObserveCamera
+		TActorIterator<AObservePawn> iter(GetWorld());
+		checkf(iter, TEXT("There is no ObserverPawn"));
+		MyObservePawn = *iter;
 
 		/*
 		FActorSpawnParameters SpawnParams;
@@ -75,11 +75,18 @@ void ACDProjectPlayerController::BeginPlay() {
 void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
-	this->SetViewTarget(MyObservePawn);
+	if(MyObservePawn->bActivate)
+		this->SetViewTarget(MyObservePawn);
 
 	static EActions Action;
 	if (!bOperatingAction)
 	{
+		if (!MyObservePawn->bActivate)
+		{
+			// 当前为相机激活后处理之前的动作
+			// ActionQueue.Dequeue(Action); //取消注释,则相机激活后丢弃之前的动作
+			return;
+		}
 		if (ActionQueue.Dequeue(Action))
 		{
 			bOperatingAction = true;

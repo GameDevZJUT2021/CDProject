@@ -16,9 +16,18 @@ public:
 	// Sets default values for this pawn's properties
 	AObservePawn();
 
-	/** Top down camera */
+	// Top down camera
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* TopDownCameraComponent;
+
+
+	// Activate this camera when cinematic is played
+	UPROPERTY(VisibleAnywhere)
+	bool bActivate = 1;
+	UFUNCTION(BlueprintCallable)
+	void Activate();
+	UFUNCTION(BlueprintCallable)
+	void InActivate();
 
 	FVector RotateAxis = FVector(0.0f, 0.0f, 1.0f);
 
