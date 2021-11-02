@@ -497,21 +497,38 @@ bool AGameInfo::DefeatJudge() const{
 	TArray<EObjectTags> DefeatPawnTags = GetObjectTags(ERuleTags::Defeat);
 	TArray<EObjectTags> YouPawnTags = GetObjectTags(ERuleTags::You);
 
+	int LivePawnNum = 0;
 
 	for (UnitInfo unitInfo : MapInfo)
 	{
 		bool bDefeat = false, bYou = false;
+		TArray<AParentPawn*> pYouPawns;
 		for (AParentPawn* pPawn : unitInfo.Objects)
 		{
 			if (DefeatPawnTags.Find(pPawn->Tag) != INDEX_NONE)
 				bDefeat = true;
+
 			if (YouPawnTags.Find(pPawn->Tag) != INDEX_NONE)
+			{
+				LivePawnNum++;
+				pYouPawns.Add(pPawn);
 				bYou = true;
+			}
 		}
 		if (bDefeat && bYou)
-			return true;
+		{
+			// 销毁这个单元上每一个为You的Pawn
+			for (AParentPawn* pDyingPawn : pYouPawns)
+			{
+				LivePawnNum--;
+				pDyingPawn->Destroy();
+			}
+		}
 	}
 
-	return false;
+	if (LivePawnNum > 0)
+		return false;
+	else
+		return true;
 }
 
