@@ -9,10 +9,18 @@
 ACDProjectGameMode::ACDProjectGameMode()
 {
 	// use our custom PlayerController class
-	PlayerControllerClass = ACDProjectPlayerController::StaticClass();
+	// PlayerControllerClass = ACDProjectPlayerController::StaticClass();
+	static ConstructorHelpers::FClassFinder<ACDProjectPlayerController> ControllerClass(TEXT("/Game/BP/MyCDProjectPlayerController"));
+	if (ControllerClass.Class != NULL)
+	{
+		PlayerControllerClass = ControllerClass.Class;
+	}
+	else
+	{
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("No Controller")));
+	}
 
-
-	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnClass(TEXT("/Game/TopDownCPP/Blueprints/MyObservePawn"));
+	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnClass(TEXT("/Game/BP/MyObservePawn"));
 	if (PlayerPawnClass.Class != NULL)
 	{
 		DefaultPawnClass = PlayerPawnClass.Class;
