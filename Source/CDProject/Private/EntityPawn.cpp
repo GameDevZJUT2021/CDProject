@@ -9,8 +9,12 @@ AEntityPawn::AEntityPawn() {
 
 	SceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootSceneComponent"));
 	RootComponent = SceneComponent;
+
 	StaticMeshComponent = CreateDefaultSubobject <UStaticMeshComponent>(TEXT("StaticMeshComponent"));
 	StaticMeshComponent->SetupAttachment(RootComponent);
+
+	SkeletalMeshComponent = CreateDefaultSubobject <USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
+	SkeletalMeshComponent->SetupAttachment(RootComponent);
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMeshAsset(TEXT("/Game/StarterContent/Shapes/Shape_Plane.Shape_Plane"));
 	if (CubeMeshAsset.Succeeded())
@@ -41,6 +45,10 @@ void AEntityPawn::Tick(float DeltaTime)
 		if (FVector::Dist(NewLocation, LocationBeforeMove) >= 99) //从100改为99,修复了有时会移动99.999还继续移动,导致位置不对的错误
 		{
 			bMoving = false;
+
+			// play idle animation if this pawn has one
+			if (haveAnimation && IdleAnim != nullptr)
+				SkeletalMeshComponent->PlayAnimation(IdleAnim, true);
 		}
 	}
 	
@@ -182,6 +190,23 @@ bool AEntityPawn::BeginMove(int AbsXdirection, int AbsYdirection, bool Controlle
 	LocationBeforeMove = PawnLocation;
 	MoveDirection.X = AbsXdirection;
 	MoveDirection.Y = AbsYdirection;
+
+	// play animation if this pawn has one
+	if (haveAnimation)
+	{
+		static bool walk_left_foot = 1;
+		if (walk_left_foot)
+		{
+			SkeletalMeshComponent->PlayAnimation(WalkAnim1,false);
+			walk_left_foot = 0;
+		}
+		else
+		{
+			SkeletalMeshComponent->PlayAnimation(WalkAnim2, false);
+			walk_left_foot = 1;
+		}
+
+	}
 	return true;
 }
 
