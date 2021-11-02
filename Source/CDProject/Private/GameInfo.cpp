@@ -27,18 +27,43 @@ void AGameInfo::Init(int width, int length)
 	RulesPool.Add(ERuleTags::You, ERuleTags::Baba);
 	RulesPool.Add(ERuleTags::You, ERuleTags::Tree);
 	RulesPool.Add(ERuleTags::You, ERuleTags::Water);
+	RulesPool.Add(ERuleTags::You, ERuleTags::Bush);
+	RulesPool.Add(ERuleTags::You, ERuleTags::Gold);
+	RulesPool.Add(ERuleTags::You, ERuleTags::Trap);
+	RulesPool.Add(ERuleTags::You, ERuleTags::Box);
+
 	RulesPool.Add(ERuleTags::Push, ERuleTags::Baba);
 	RulesPool.Add(ERuleTags::Push, ERuleTags::Tree);
 	RulesPool.Add(ERuleTags::Push, ERuleTags::Water);
+	RulesPool.Add(ERuleTags::Push, ERuleTags::Bush);
+	RulesPool.Add(ERuleTags::Push, ERuleTags::Gold);
+	RulesPool.Add(ERuleTags::Push, ERuleTags::Trap);
+	RulesPool.Add(ERuleTags::Push, ERuleTags::Box);
+
 	RulesPool.Add(ERuleTags::Win, ERuleTags::Baba);
 	RulesPool.Add(ERuleTags::Win, ERuleTags::Tree);
 	RulesPool.Add(ERuleTags::Win, ERuleTags::Water);
+	RulesPool.Add(ERuleTags::Win, ERuleTags::Bush);
+	RulesPool.Add(ERuleTags::Win, ERuleTags::Gold);
+	RulesPool.Add(ERuleTags::Win, ERuleTags::Trap);
+	RulesPool.Add(ERuleTags::Win, ERuleTags::Box);
+
 	RulesPool.Add(ERuleTags::Defeat, ERuleTags::Baba);
 	RulesPool.Add(ERuleTags::Defeat, ERuleTags::Tree);
 	RulesPool.Add(ERuleTags::Defeat, ERuleTags::Water);
+	RulesPool.Add(ERuleTags::Defeat, ERuleTags::Bush);
+	RulesPool.Add(ERuleTags::Defeat, ERuleTags::Gold);
+	RulesPool.Add(ERuleTags::Defeat, ERuleTags::Trap);
+	RulesPool.Add(ERuleTags::Defeat, ERuleTags::Box);
+
 	RulesPool.Add(ERuleTags::Move, ERuleTags::Baba);
 	RulesPool.Add(ERuleTags::Move, ERuleTags::Tree);
 	RulesPool.Add(ERuleTags::Move, ERuleTags::Water);
+	RulesPool.Add(ERuleTags::Move, ERuleTags::Bush);
+	RulesPool.Add(ERuleTags::Move, ERuleTags::Gold);
+	RulesPool.Add(ERuleTags::Move, ERuleTags::Trap);
+	RulesPool.Add(ERuleTags::Move, ERuleTags::Box);
+
 
 
 
@@ -123,15 +148,27 @@ void AGameInfo::UpdateMapInfo() {
 	// 更新现在地图信息
 	for (TActorIterator<AParentPawn> iter(GetWorld()); iter; ++iter)
 	{
-		AParentPawn* ParentPawn = *iter;
-		FVector PawnLocation = ParentPawn->GetActorLocation();
+		AParentPawn* pParentPawn = *iter;
+		FVector PawnLocation = pParentPawn->GetActorLocation();
 
-		checkf(static_cast<int>(PawnLocation.X) % 100 < 1 && static_cast<int>(PawnLocation.Y) % 100 < 1, TEXT("Location is not aligned"));
+		if (static_cast<int>(PawnLocation.X) % 100 > 0.01 && static_cast<int>(PawnLocation.Y) % 100 > 0.01)
+		{
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,TEXT("Location is not aligned, Some errors may occured"));
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,pParentPawn->GetHumanReadableName());
+			// 忽略位置错误的pawn
+			continue;
+		}
 		int x = (PawnLocation.X + (MapWidth - 1) * 50) / 100;
 		int y = (PawnLocation.Y + (MapLength - 1) * 50) / 100;
-		checkf(0 <= x && x < MapWidth && 0 <= y && y < MapLength, TEXT("Location is out of the map"));
+		if (0 > x || x >= MapWidth || 0 > y || y >= MapLength)
+		{
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Location is out of the map, Some errors may occured"));
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, pParentPawn->GetHumanReadableName());
+			// 忽略位置错误的pawn
+			continue;
+		}
 
-		MapInfo[x * MapWidth + y].Objects.Push(ParentPawn);
+		MapInfo[x * MapWidth + y].Objects.Push(pParentPawn);
 	}
 }
 
