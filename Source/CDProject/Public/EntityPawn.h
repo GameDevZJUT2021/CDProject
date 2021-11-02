@@ -24,7 +24,21 @@ public:
 	UStaticMeshComponent* StaticMeshComponent;
 
 	UPROPERTY(EditAnywhere)
+	USkeletalMeshComponent* SkeletalMeshComponent;
+
+	UPROPERTY(EditAnywhere)
 	bool haveFace = 1;
+
+	UPROPERTY(EditAnywhere)
+	bool haveAnimation = 0;
+
+	// Ñ­»·²¥·ÅWalkAnim1ºÍWalkAnim2
+	UPROPERTY(EditAnywhere)
+	UAnimationAsset* WalkAnim1;
+	UPROPERTY(EditAnywhere)
+	UAnimationAsset* WalkAnim2;
+	UPROPERTY(EditAnywhere)
+	UAnimationAsset* IdleAnim;
 
 	UPROPERTY(EditAnywhere)
 	FVector FaceDirection = FVector(0.0f, -1.0f, 0.0f);
