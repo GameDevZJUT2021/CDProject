@@ -7,6 +7,7 @@
 #include "EntityPawn.h"
 #include "RulePawn.h"
 #include "EngineUtils.h"
+#include "Misc/OutputDeviceNull.h"
 #include "Engine/World.h"
 
 ACDProjectPlayerController::ACDProjectPlayerController()
@@ -130,15 +131,15 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 				MyGameInfo->UpdateRule(CameraAbsLocation);
 				if (MyGameInfo->WinJudge())
 				{
-					// 弹出胜利窗口:待实现
 					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString(TEXT("You Win")));
-
+					FOutputDeviceNull OutputDeviceNull;
+					CallFunctionByNameWithArguments(TEXT("Function_UMG_CreateNewWindow_Win"), OutputDeviceNull, nullptr, true);
 				}
 				if (MyGameInfo->DefeatJudge())
 				{
-					// 弹出失败窗口
 					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("You Lose")));
-
+					FOutputDeviceNull OutputDeviceNull;
+					CallFunctionByNameWithArguments(TEXT("Function_UMG_CreateNewWindow_Lose"), OutputDeviceNull, nullptr, true);
 				}
 			}
 			break;
@@ -185,7 +186,9 @@ void ACDProjectPlayerController::ProcessMoveAction(EActions Action) {
 	if (pYouPawns.Num() == 0  && pMovePawns.Num() == 0)
 	{
 		// 弹出失败窗口
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("You Lose")));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("You Lost Control")));
+		FOutputDeviceNull OutputDeviceNull;
+		CallFunctionByNameWithArguments(TEXT("Function_UMG_CreateNewWindow_Lose"), OutputDeviceNull, nullptr, true);
 
 	}
 
