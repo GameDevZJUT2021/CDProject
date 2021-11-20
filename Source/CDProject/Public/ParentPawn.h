@@ -23,10 +23,10 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Attribute")
 	bool bWalkable = true;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Attribute")
 	EObjectTags Tag = EObjectTags::Baba;
 
 	// Called to bind functionality to input

@@ -47,9 +47,16 @@ void AEntityPawn::Tick(float DeltaTime)
 			bMoving = false;
 
 			// play idle animation if this pawn has one
-			if (haveAnimation && IdleAnim != nullptr)
+			if (haveSkeletaAnimation && IdleAnim != nullptr)
 				SkeletalMeshComponent->PlayAnimation(IdleAnim, true);
 		}
+	}
+
+	if (isSelfRotating)
+	{
+		FRotator currRotator =  StaticMeshComponent->GetRelativeRotation();
+		currRotator.Yaw += RotateSpeed;
+		StaticMeshComponent->SetRelativeRotation(currRotator);
 	}
 	
 }
@@ -192,7 +199,7 @@ bool AEntityPawn::BeginMove(int AbsXdirection, int AbsYdirection, bool Controlle
 	MoveDirection.Y = AbsYdirection;
 
 	// play animation if this pawn has one
-	if (haveAnimation)
+	if (haveSkeletaAnimation)
 	{
 		static bool walk_left_foot = 1;
 		if (walk_left_foot)

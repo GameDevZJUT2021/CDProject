@@ -22,20 +22,20 @@ public:
 	UPROPERTY(EditAnywhere)
 	USceneComponent* SceneComponent;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Mesh")
 	UStaticMeshComponent* StaticMeshComponent;
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Rule")
 	ERuleTags TopTag;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Rule")
 	ERuleTags BottomTag;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Rule")
 	ERuleTags SouthTag;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Rule")
 	ERuleTags WestTag;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Rule")
 	ERuleTags NorthTag;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Rule")
 	ERuleTags EastTag;
 
 

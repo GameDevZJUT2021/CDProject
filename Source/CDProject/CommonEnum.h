@@ -1,5 +1,6 @@
 #pragma once
 #include "UObject/Class.h"
+#include "CommonEnum.generated.h"
 
 enum class EActions : char
 { Forward, Back, Left, Right, Wait, CameraTurnLeft, CameraTurnRight };

@@ -20,32 +20,35 @@ public:
 	UPROPERTY(EditAnywhere)
 	USceneComponent* SceneComponent;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Mesh")
 	UStaticMeshComponent* StaticMeshComponent;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Mesh")
 	USkeletalMeshComponent* SkeletalMeshComponent;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Attribute")
 	bool haveFace = 1;
 
-	UPROPERTY(EditAnywhere)
-	bool haveAnimation = 0;
+	UPROPERTY(EditAnywhere, Category = "Attribute")
+	FVector FaceDirection = FVector(0.0f, -1.0f, 0.0f);
 
-	// 循环播放WalkAnim1和WalkAnim2
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	bool haveSkeletaAnimation = 0;
+	// 循环播放WalkAnim1和WalkAnim2以模拟左右脚走路
+	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimationAsset* WalkAnim1;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimationAsset* WalkAnim2;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimationAsset* IdleAnim;
 
-	UPROPERTY(EditAnywhere)
-	FVector FaceDirection = FVector(0.0f, -1.0f, 0.0f);
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	bool isSelfRotating = 0;
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	uint8 RotateSpeed = 0;
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
 
 	virtual bool BeginControlledMove(EActions Action, ECameraAbsLocations CameraAbsLocation) override;
 	virtual bool BeginIndependentMove() override;
