@@ -8,6 +8,8 @@
 #include "EntityPawn.h"
 #include "..\CommonEnum.h"
 #include "Containers/Map.h"
+#include "ExampleEntityPawn.h"
+#include "RulePawn.h"
 #include "GameInfo.generated.h"
 
 struct UnitInfo
@@ -29,6 +31,9 @@ public:
 
 	void Init(int width, int length);
 
+	UPROPERTY(BlueprintReadWrite,EditAnywhere)
+	int test;
+
 	int MapLength;
 	int MapWidth;
 	TArray	<UnitInfo> MapInfo; // 2D array. UE4 does not support 2D array naturally, so use a simple conversion instead
@@ -41,6 +46,7 @@ public:
 
 	void UpdateMapInfo();
 	void UpdateRule(ECameraAbsLocations CameraAbsLocation);
+	void UpdateLightEffect();
 
 	bool WinJudge() const;
 	bool DefeatJudge() const;
@@ -55,4 +61,9 @@ public:
 
 private:
 	bool RuleIsVisible(ECameraAbsLocations CameraAbsLocation,const TArray<int>& MapInfo_X, const TArray<int> &MapInfo_Y, int CurrentIndex) const;
+	enum Face { Top, South, West , East, North};
+	void TryToActivateRule(ARulePawn* pFirstRulePawn, ARulePawn* pLastRulePawn, ARulePawn* pIsRulePawn, enum Face face);
+	void ChangeAllEntity(EObjectTags srcTag, EObjectTags destTag) const;
+	void ChangeEntity(AEntityPawn* pSrcPawn, const AExampleEntityPawn * const pDestPawn) const;
+	void UpdateLightEffectForOneFace(UMaterialInstanceDynamic* DynMaterial, ARulePawn* pRulePawn, bool LightOn, int index);
 };

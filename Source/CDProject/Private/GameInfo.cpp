@@ -4,12 +4,13 @@
 #include "GameInfo.h"
 #include "EntityPawn.h"
 #include "RulePawn.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 // Sets default values
 AGameInfo::AGameInfo()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	// PrimaryActorTick.bCanEverTick = true;
 
 }
 
@@ -19,10 +20,6 @@ void AGameInfo::Init(int width, int length)
 	MapWidth = width;
 	MapLength = length;
 	MapInfo.Init(UnitInfo(), width * length);
-
-	// Test Rule
-	//ActiveRules.Add(ERuleTags::You, ERuleTags::Baba);
-	//ActiveRules.Add(ERuleTags::Push, ERuleTags::Water);
 
 	RulesPool.Add(ERuleTags::You, ERuleTags::Baba);
 	RulesPool.Add(ERuleTags::You, ERuleTags::Tree);
@@ -64,22 +61,16 @@ void AGameInfo::Init(int width, int length)
 	RulesPool.Add(ERuleTags::Move, ERuleTags::Trap);
 	RulesPool.Add(ERuleTags::Move, ERuleTags::Box);
 
-
-
-
-	//RulesPool.Init("", 1);
-
-	//scan the map to fill in the MapInfo and ActiveRules?
 }
 
-// Called when the game starts or when spawned
+ //Called when the game starts or when spawned
 void AGameInfo::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
-// Called every frame
+ //Called every frame
 void AGameInfo::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -88,15 +79,18 @@ void AGameInfo::Tick(float DeltaTime)
 
 
 TArray<EObjectTags> AGameInfo::GetObjectTags(ERuleTags ruleTag) const {
+	if (!isAttribute(ruleTag))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,TEXT("Get Object Tags Error: No such Rule"));
+		return TArray<EObjectTags>();
+	}
+
 	TArray<ERuleTags> FindResultRuleTags;
 	TArray<EObjectTags> objectTags;
 	ActiveRules.MultiFind(ruleTag, FindResultRuleTags);
 
 	for (ERuleTags tag : FindResultRuleTags)
-	{
-		int cast_value = static_cast<int>(tag);
-		objectTags.Push(static_cast<EObjectTags>(cast_value));
-	}
+		objectTags.Push(static_cast<EObjectTags>(tag));
 
 	return objectTags;
 }
@@ -151,20 +145,20 @@ void AGameInfo::UpdateMapInfo() {
 		AParentPawn* pParentPawn = *iter;
 		FVector PawnLocation = pParentPawn->GetActorLocation();
 
+		// 忽略位置错误的pawn
 		if (static_cast<int>(PawnLocation.X) % 100 > 0.01 && static_cast<int>(PawnLocation.Y) % 100 > 0.01)
 		{
 			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,TEXT("Location is not aligned, Some errors may occured"));
 			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,pParentPawn->GetHumanReadableName());
-			// 忽略位置错误的pawn
 			continue;
 		}
 		int x = (PawnLocation.X + (MapWidth - 1) * 50) / 100;
 		int y = (PawnLocation.Y + (MapLength - 1) * 50) / 100;
+		// 忽略位置错误的pawn
 		if (0 > x || x >= MapWidth || 0 > y || y >= MapLength)
 		{
 			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Location is out of the map, Some errors may occured"));
 			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, pParentPawn->GetHumanReadableName());
-			// 忽略位置错误的pawn
 			continue;
 		}
 
@@ -256,34 +250,39 @@ bool AGameInfo::RuleIsVisible(ECameraAbsLocations CameraAbsLocation, const TArra
 void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 	ActiveRules.Empty();
 	TArray<int> MapInfo_X, MapInfo_Y;
-	TArray<ARulePawn*> RulePawnArray;
+	TArray<ARulePawn*> pRulePawnArray;
 
 	// save all rule pawns' infomation
 	for (TActorIterator<ARulePawn> iter(GetWorld()); iter; ++iter)
 	{
-		ARulePawn* rulePawn = *iter;
-		FVector PawnLocation = rulePawn->GetActorLocation();
+		ARulePawn* pRulePawn = *iter;
+		FVector PawnLocation = pRulePawn->GetActorLocation();
 		int x = (PawnLocation.X + (MapWidth - 1) * 50) / 100;
 		int y = (PawnLocation.Y + (MapLength - 1) * 50) / 100;
 		checkf(0 <= x && x < MapWidth && 0 <= y && y < MapLength, TEXT("Location Wrong"));
 		MapInfo_X.Push(x);
 		MapInfo_Y.Push(y);
-		RulePawnArray.Push(rulePawn);
+		pRulePawn->TopTagActive = false;
+		pRulePawn->EastTagActive = false;
+		pRulePawn->WestTagActive = false;
+		pRulePawn->NorthTagActive = false;
+		pRulePawn->SouthTagActive = false;
+		pRulePawnArray.Push(pRulePawn);
 	}
 
 
 	if (CameraAbsLocation == ECameraAbsLocations::South || CameraAbsLocation == ECameraAbsLocations::North)
 	{
-		for (int i = 0; i < RulePawnArray.Num(); i++)
+		for (int i = 0; i < pRulePawnArray.Num(); i++)
 		{
-			// 南北方向
+			// 规则方块上面的南北方向规则判断
 			// 边界检查,舍去最外围的方块
-			if (RulePawnArray[i]->TopTag == ERuleTags::is)
+			if (pRulePawnArray[i]->TopTag == ERuleTags::is)
 			{
 				if (MapInfo_X[i] != 0 && MapInfo_X[i] != MapWidth - 1)
 				{
 					bool bSouthExist = 0, bNorthExist = 0;
-					ARulePawn* VerticalFirstRulePawn = nullptr, * VerticalLastRulePawn = nullptr;
+					ARulePawn* pVerticalFirstRulePawn = nullptr, * pVerticalLastRulePawn = nullptr;
 					for (int j = 0; j < MapInfo_X.Num(); j++)
 					{
 						if (MapInfo_X[j] == MapInfo_X[i] - 1)
@@ -291,7 +290,7 @@ void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 							if (MapInfo_Y[j] == MapInfo_Y[i])
 							{
 								bSouthExist = 1;
-								VerticalLastRulePawn = RulePawnArray[j];
+								pVerticalLastRulePawn = pRulePawnArray[j];
 							}
 						}
 						else if (MapInfo_X[j] == MapInfo_X[i] + 1)
@@ -299,26 +298,23 @@ void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 							if (MapInfo_Y[j] == MapInfo_Y[i])
 							{
 								bNorthExist = 1;
-								VerticalFirstRulePawn = RulePawnArray[j];
+								pVerticalFirstRulePawn = pRulePawnArray[j];
 							}
 						}
 						if (bSouthExist && bNorthExist) // 规则形成
 						{
-							// 检查规则是否合理 并加入规则
-							// 规则是倒着存储的
-							if (RulesPool.FindPair(VerticalLastRulePawn->TopTag, VerticalFirstRulePawn->TopTag))
-								ActiveRules.Add(VerticalLastRulePawn->TopTag, VerticalFirstRulePawn->TopTag);
+							TryToActivateRule(pVerticalFirstRulePawn, pVerticalLastRulePawn, pRulePawnArray[i], Face::Top);
 							break;
 						}
 					}
 				}
 			}
-
 			// 东西方向
+			// 先找到3个连在一起的再判断中间是否为is, 这样可以一次判断两个面
 			if (MapInfo_Y[i] != 0 && MapInfo_Y[i] != MapLength - 1)
 			{
 				bool bWestExist = 0, bEastExist = 0;
-				ARulePawn* HorizontalFirstRulePawn = nullptr, * HorizontalLastRulePawn = nullptr;
+				ARulePawn* pHorizontalFirstRulePawn = nullptr, * pHorizontalLastRulePawn = nullptr;
 				for (int j = 0; j < MapInfo_Y.Num(); j++)
 				{
 					if (MapInfo_Y[j] == MapInfo_Y[i] - 1)
@@ -326,7 +322,7 @@ void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 						if (MapInfo_X[j] == MapInfo_X[i])
 						{
 							bWestExist = 1;
-							HorizontalFirstRulePawn = RulePawnArray[j];
+							pHorizontalFirstRulePawn = pRulePawnArray[j];
 						}
 					}
 					else if (MapInfo_Y[j] == MapInfo_Y[i] + 1)
@@ -334,36 +330,26 @@ void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 						if (MapInfo_X[j] == MapInfo_X[i])
 						{
 							bEastExist = 1;
-							HorizontalLastRulePawn = RulePawnArray[j];
+							pHorizontalLastRulePawn = pRulePawnArray[j];
 						}
 					}
 					if (bWestExist && bEastExist)
 					{
-						// 检测并加入top面规则
-						if (RulePawnArray[i]->TopTag == ERuleTags::is)
+						// Top face
+						if (pRulePawnArray[i]->TopTag == ERuleTags::is)
+							TryToActivateRule(pHorizontalFirstRulePawn, pHorizontalLastRulePawn, pRulePawnArray[i], Face::Top);
+
+						if (CameraAbsLocation == ECameraAbsLocations::South)
 						{
-							if (RulesPool.FindPair(HorizontalLastRulePawn->TopTag, HorizontalFirstRulePawn->TopTag))
-								ActiveRules.Add(HorizontalLastRulePawn->TopTag, HorizontalFirstRulePawn->TopTag);
+							// 检测south面规则是否被遮挡
+							if (pRulePawnArray[i]->SouthTag == ERuleTags::is && RuleIsVisible(ECameraAbsLocations::South, MapInfo_X, MapInfo_Y, i))
+								TryToActivateRule(pHorizontalFirstRulePawn, pHorizontalLastRulePawn, pRulePawnArray[i], Face::South);
 						}
-						if (CameraAbsLocation == ECameraAbsLocations::South) {
-							if (RulePawnArray[i]->SouthTag == ERuleTags::is) {
-								// 检测south面规则是否被遮挡
-								if (RuleIsVisible(ECameraAbsLocations::South, MapInfo_X, MapInfo_Y, i))
-								{
-									if (RulesPool.FindPair(HorizontalLastRulePawn->SouthTag, HorizontalFirstRulePawn->SouthTag))
-										ActiveRules.Add(HorizontalLastRulePawn->SouthTag, HorizontalFirstRulePawn->SouthTag);
-								}
-							}
-						}
-						else if (CameraAbsLocation == ECameraAbsLocations::North) {
-							if (RulePawnArray[i]->NorthTag == ERuleTags::is) {
-								//检测north面规则是否被遮挡
-								if (RuleIsVisible(ECameraAbsLocations::North, MapInfo_X, MapInfo_Y, i))
-								{
-									if (RulesPool.FindPair(HorizontalFirstRulePawn->NorthTag, HorizontalLastRulePawn->NorthTag))
-										ActiveRules.Add(HorizontalFirstRulePawn->NorthTag, HorizontalLastRulePawn->NorthTag);
-								}
-							}
+						else if (CameraAbsLocation == ECameraAbsLocations::North) 
+						{
+							//检测north面规则是否被遮挡
+							if (pRulePawnArray[i]->NorthTag == ERuleTags::is && RuleIsVisible(ECameraAbsLocations::North, MapInfo_X, MapInfo_Y, i)) 
+								TryToActivateRule(pHorizontalFirstRulePawn, pHorizontalLastRulePawn, pRulePawnArray[i], Face::North);
 						}
 						break;
 					}
@@ -371,18 +357,19 @@ void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 			}
 		}
 	}
+
 	else if (CameraAbsLocation == ECameraAbsLocations::West || CameraAbsLocation == ECameraAbsLocations::East)
 	{
-		for (int i = 0; i < RulePawnArray.Num(); i++)
+		for (int i = 0; i < pRulePawnArray.Num(); i++)
 		{
 			// 东西方向
 			// 边界检查,舍去最外围的方块
-			if (RulePawnArray[i]->TopTag == ERuleTags::is)
+			if (pRulePawnArray[i]->TopTag == ERuleTags::is)
 			{
 				if (MapInfo_Y[i] != 0 && MapInfo_Y[i] != MapLength - 1)
 				{
 					bool bEastExist = 0, bWestExist = 0;
-					ARulePawn* VerticalFirstRulePawn = nullptr, * VerticalLastRulePawn = nullptr;
+					ARulePawn* pVerticalFirstRulePawn = nullptr, * pVerticalLastRulePawn = nullptr;
 					for (int j = 0; j < MapInfo_Y.Num(); j++)
 					{
 						if (MapInfo_Y[j] == MapInfo_Y[i] - 1)
@@ -390,7 +377,7 @@ void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 							if (MapInfo_X[j] == MapInfo_X[i])
 							{
 								bWestExist = 1;
-								VerticalFirstRulePawn = RulePawnArray[j];
+								pVerticalFirstRulePawn = pRulePawnArray[j];
 							}
 						}
 						else if (MapInfo_Y[j] == MapInfo_Y[i] + 1)
@@ -398,13 +385,12 @@ void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 							if (MapInfo_X[j] == MapInfo_X[i])
 							{
 								bEastExist = 1;
-								VerticalLastRulePawn = RulePawnArray[j];
+								pVerticalLastRulePawn = pRulePawnArray[j];
 							}
 						}
 						if (bWestExist && bEastExist)
 						{
-							if (RulesPool.FindPair(VerticalLastRulePawn->TopTag, VerticalFirstRulePawn->TopTag))
-								ActiveRules.Add(VerticalLastRulePawn->TopTag, VerticalFirstRulePawn->TopTag);
+							TryToActivateRule(pVerticalFirstRulePawn, pVerticalLastRulePawn, pRulePawnArray[i], Face::Top);
 							break;
 						}
 					}
@@ -415,7 +401,7 @@ void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 			if (MapInfo_X[i] != 0 && MapInfo_X[i] != MapWidth - 1)
 			{
 				bool bSouthExist = 0, bNorthExist = 0;
-				ARulePawn* HorizontalFirstRulePawn = nullptr, * HorizontalLastRulePawn = nullptr;
+				ARulePawn* pHorizontalFirstRulePawn = nullptr, * pHorizontalLastRulePawn = nullptr;
 				for (int j = 0; j < MapInfo_X.Num(); j++)
 				{
 					if (MapInfo_X[j] == MapInfo_X[i] - 1)
@@ -423,7 +409,7 @@ void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 						if (MapInfo_Y[j] == MapInfo_Y[i])
 						{
 							bSouthExist = 1;
-							HorizontalLastRulePawn = RulePawnArray[j];
+							pHorizontalLastRulePawn = pRulePawnArray[j];
 						}
 					}
 					else if (MapInfo_X[j] == MapInfo_X[i] + 1)
@@ -431,37 +417,25 @@ void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 						if (MapInfo_Y[j] == MapInfo_Y[i])
 						{
 							bNorthExist = 1;
-							HorizontalFirstRulePawn = RulePawnArray[j];
+							pHorizontalFirstRulePawn = pRulePawnArray[j];
 						}
 					}
 					if (bSouthExist && bNorthExist)
 					{
-						if (RulePawnArray[i]->TopTag == ERuleTags::is)
-						{
-							if (RulesPool.FindPair(HorizontalLastRulePawn->TopTag, HorizontalFirstRulePawn->TopTag))
-								ActiveRules.Add(HorizontalLastRulePawn->TopTag, HorizontalFirstRulePawn->TopTag);
-						}
+						if (pRulePawnArray[i]->TopTag == ERuleTags::is)
+							TryToActivateRule(pHorizontalFirstRulePawn, pHorizontalLastRulePawn, pRulePawnArray[i], Face::Top);
+
 						if (CameraAbsLocation == ECameraAbsLocations::West)
 						{
-							if (RulePawnArray[i]->WestTag == ERuleTags::is)
-							{
-								//检测West面规则是否被遮挡
-								if (RuleIsVisible(ECameraAbsLocations::West, MapInfo_X, MapInfo_Y, i))
-								{
-									if (RulesPool.FindPair(HorizontalLastRulePawn->WestTag, HorizontalFirstRulePawn->WestTag))
-										ActiveRules.Add(HorizontalLastRulePawn->WestTag, HorizontalFirstRulePawn->WestTag);
-								}
-							}
+							//检测West面规则是否被遮挡
+							if (pRulePawnArray[i]->WestTag == ERuleTags::is && RuleIsVisible(ECameraAbsLocations::West, MapInfo_X, MapInfo_Y, i))
+								TryToActivateRule(pHorizontalFirstRulePawn, pHorizontalLastRulePawn, pRulePawnArray[i], Face::West);
 						}
 						else if (CameraAbsLocation == ECameraAbsLocations::East)
 						{
-							if (RulePawnArray[i]->EastTag == ERuleTags::is)
-							{
-								//检测East面规则是否被遮挡
-								if (RuleIsVisible(ECameraAbsLocations::East, MapInfo_X, MapInfo_Y, i))
-									if (RulesPool.FindPair(HorizontalFirstRulePawn->EastTag, HorizontalLastRulePawn->EastTag))
-										ActiveRules.Add(HorizontalFirstRulePawn->EastTag, HorizontalLastRulePawn->EastTag);
-							}
+							//检测East面规则是否被遮挡
+							if (pRulePawnArray[i]->EastTag == ERuleTags::is && RuleIsVisible(ECameraAbsLocations::East, MapInfo_X, MapInfo_Y, i))
+								TryToActivateRule(pHorizontalFirstRulePawn, pHorizontalLastRulePawn, pRulePawnArray[i], Face::East);
 						}
 						break;
 					}
@@ -469,7 +443,136 @@ void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 			}
 		}
 	}
+	UpdateLightEffect();
 }
+
+void AGameInfo::TryToActivateRule(ARulePawn* pFirstRulePawn, ARulePawn* pLastRulePawn, ARulePawn* pIsRulePawn, enum Face face) {
+	
+	switch (face)
+	{
+	case Top:
+		// object is attribute
+		if (isObject(pFirstRulePawn->TopTag) && isAttribute(pLastRulePawn->TopTag))
+		{
+			ActiveRules.Add(pLastRulePawn->TopTag, pFirstRulePawn->TopTag);
+			// turn on the light effect in UpdateLightEffect function
+			pLastRulePawn->TopTagActive = true;
+			pFirstRulePawn->TopTagActive = true;
+			pIsRulePawn->TopTagActive = true;
+		}
+		// object a is object b, change all object a to object b
+		else if (isObject(pFirstRulePawn->TopTag) && isObject(pLastRulePawn->TopTag))
+		{
+			ChangeAllEntity(static_cast<EObjectTags>(pFirstRulePawn->TopTag), static_cast<EObjectTags>(pLastRulePawn->TopTag));
+		}
+		break;
+
+	case South:
+		// object is attribute
+		if (isObject(pFirstRulePawn->SouthTag) && isAttribute(pLastRulePawn->SouthTag))
+		{
+			ActiveRules.Add(pLastRulePawn->SouthTag, pFirstRulePawn->SouthTag);
+			// turn on the light effect in UpdateLightEffect function
+			pLastRulePawn->SouthTagActive = true;
+			pFirstRulePawn->SouthTagActive = true;
+			pIsRulePawn->SouthTagActive = true;
+		}
+		// object a is object b, change all object a to object b
+		else if (isObject(pFirstRulePawn->SouthTag) && isObject(pLastRulePawn->SouthTag))
+		{
+			ChangeAllEntity(static_cast<EObjectTags>(pFirstRulePawn->SouthTag), static_cast<EObjectTags>(pLastRulePawn->SouthTag));
+		}
+		break;
+
+	case West:
+		// object is attribute
+		if (isObject(pFirstRulePawn->WestTag) && isAttribute(pLastRulePawn->WestTag))
+		{
+			ActiveRules.Add(pLastRulePawn->WestTag, pFirstRulePawn->WestTag);
+			// turn on the light effect in UpdateLightEffect function
+			pLastRulePawn->WestTagActive = true;
+			pFirstRulePawn->WestTagActive = true;
+			pIsRulePawn->WestTagActive = true;
+		}
+		// object a is object b, change all object a to object b
+		else if (isObject(pFirstRulePawn->WestTag) && isObject(pLastRulePawn->WestTag))
+		{
+			ChangeAllEntity(static_cast<EObjectTags>(pFirstRulePawn->WestTag), static_cast<EObjectTags>(pLastRulePawn->WestTag));
+		}
+		break;
+
+	case East:
+		// object is attribute
+		if (isObject(pFirstRulePawn->EastTag) && isAttribute(pLastRulePawn->EastTag))
+		{
+			ActiveRules.Add(pLastRulePawn->EastTag, pFirstRulePawn->EastTag);
+			// turn on the light effect in UpdateLightEffect function
+			pLastRulePawn->EastTagActive = true;
+			pFirstRulePawn->EastTagActive = true;
+			pIsRulePawn->EastTagActive = true;
+		}
+		// object a is object b, change all object a to object b
+		else if (isObject(pFirstRulePawn->EastTag) && isObject(pLastRulePawn->EastTag))
+		{
+			ChangeAllEntity(static_cast<EObjectTags>(pFirstRulePawn->EastTag), static_cast<EObjectTags>(pLastRulePawn->EastTag));
+		}
+		break;
+
+	case North:
+		// object is attribute
+		if (isObject(pFirstRulePawn->NorthTag) && isAttribute(pLastRulePawn->NorthTag))
+		{
+			ActiveRules.Add(pLastRulePawn->NorthTag, pFirstRulePawn->NorthTag);
+			// turn on the light effect in UpdateLightEffect function
+			pLastRulePawn->NorthTagActive = true;
+			pFirstRulePawn->NorthTagActive = true;
+			pIsRulePawn->NorthTagActive = true;
+		}
+		// object a is object b, change all object a to object b
+		else if (isObject(pFirstRulePawn->NorthTag) && isObject(pLastRulePawn->NorthTag))
+		{
+			ChangeAllEntity(static_cast<EObjectTags>(pFirstRulePawn->NorthTag), static_cast<EObjectTags>(pLastRulePawn->NorthTag));
+		}
+		break;
+
+	default:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("TryToActivateRule failed: Wrong Face"));
+		break;
+	}
+
+}
+
+void AGameInfo::UpdateLightEffect() {
+	for (TActorIterator<ARulePawn> iter(GetWorld()); iter; ++iter)
+	{
+		ARulePawn* pRulePawn = *iter;
+
+		UMaterialInstanceDynamic* DynMaterial = UMaterialInstanceDynamic::Create(pRulePawn->TopMaterial, this);
+		UpdateLightEffectForOneFace(DynMaterial, pRulePawn, pRulePawn->TopTagActive, 0);
+
+		// index 1 is bottom face
+
+		DynMaterial = UMaterialInstanceDynamic::Create(pRulePawn->EastMaterial, this);
+		UpdateLightEffectForOneFace(DynMaterial, pRulePawn, pRulePawn->EastTagActive, 2);
+
+		DynMaterial = UMaterialInstanceDynamic::Create(pRulePawn->WestMaterial, this);
+		UpdateLightEffectForOneFace(DynMaterial, pRulePawn, pRulePawn->WestTagActive, 3);
+
+		DynMaterial = UMaterialInstanceDynamic::Create(pRulePawn->NorthMaterial, this);
+		UpdateLightEffectForOneFace(DynMaterial, pRulePawn, pRulePawn->NorthTagActive, 4);
+
+		DynMaterial = UMaterialInstanceDynamic::Create(pRulePawn->SouthMaterial, this);
+		UpdateLightEffectForOneFace(DynMaterial, pRulePawn, pRulePawn->SouthTagActive, 5);
+
+	}
+}
+
+void AGameInfo::UpdateLightEffectForOneFace(UMaterialInstanceDynamic* DynMaterial, ARulePawn* pRulePawn, bool LightOn, int index) {
+	DynMaterial->SetScalarParameterValue("isRuleActive", LightOn);
+	pRulePawn->StaticMeshComponent->SetMaterial(index, DynMaterial);
+}
+
+
 
 bool AGameInfo::WinJudge() const{
 	TArray<EObjectTags> WinPawnTags = GetObjectTags(ERuleTags::Win);
@@ -532,3 +635,51 @@ bool AGameInfo::DefeatJudge() const{
 		return true;
 }
 
+void AGameInfo::ChangeAllEntity(EObjectTags srcTag, EObjectTags destTag) const {
+	if (srcTag == destTag)
+		return;
+
+	TArray<AEntityPawn*> pSrcPawnArray;
+	AExampleEntityPawn* pDestExamplePawn = nullptr;
+
+	for (TActorIterator<AEntityPawn> iter(GetWorld()); iter; ++iter)
+	{
+		AEntityPawn* pEntityPawn = *iter;
+		if (pEntityPawn->Tag == srcTag)
+			pSrcPawnArray.Add(pEntityPawn);
+	}
+
+	for (TActorIterator<AExampleEntityPawn> iter(GetWorld()); iter; ++iter)
+	{
+		AExampleEntityPawn* pExampleEntityPawn = *iter;
+		if (pExampleEntityPawn->Tag == destTag)
+		{
+			pDestExamplePawn = pExampleEntityPawn;
+			break;
+		}
+	}
+
+	checkf(pDestExamplePawn, TEXT("Dest object example does not exist"));
+
+	for (AEntityPawn* pSrcPawn: pSrcPawnArray)
+	{
+		ChangeEntity(pSrcPawn, pDestExamplePawn);
+	}
+}
+
+void AGameInfo::ChangeEntity(AEntityPawn* pSrcPawn, const AExampleEntityPawn* const pDestPawn) const {
+	pSrcPawn->StaticMeshComponent->SetStaticMesh(pDestPawn->StaticMesh);
+	pSrcPawn->SkeletalMeshComponent->SetSkeletalMesh(pDestPawn->SkeletalMesh);
+
+	pSrcPawn->haveFace = pDestPawn->haveFace;
+	pSrcPawn->bWalkable = pDestPawn->bWalkable;
+	pSrcPawn->Tag = pDestPawn->Tag;
+
+	pSrcPawn->haveSkeletaAnimation = pDestPawn->haveSkeletaAnimation;
+	pSrcPawn->WalkAnim1 = pDestPawn->WalkAnim1;
+	pSrcPawn->WalkAnim2 = pDestPawn->WalkAnim2;
+	pSrcPawn->IdleAnim = pDestPawn->IdleAnim;
+
+	pSrcPawn->isSelfRotating = pDestPawn->isSelfRotating;
+	pSrcPawn->RotateSpeed = pDestPawn->RotateSpeed;
+}
