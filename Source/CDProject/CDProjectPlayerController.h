@@ -46,6 +46,7 @@ protected:
 	void OnMoveBack();
 
 	void OnWait();
+	void OnFly();
 
 	void OnCameraTurnLeft();
 	void OnCameraTurnRight();

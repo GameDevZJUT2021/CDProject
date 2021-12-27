@@ -29,6 +29,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Attribute")
 	EObjectTags Tag = EObjectTags::Baba;
 
+	UPROPERTY(EditAnywhere, Category = "Attribute")
+	int onLayer = 1;
+
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -37,5 +40,7 @@ public:
 	virtual bool BeginIndependentMove();
 	virtual bool BeginMove(int AbsXdirection, int AbsYdirection, bool ControlledOrIndenpent = 1);
 	virtual bool isMoveDone() const;
+
+
 
 };

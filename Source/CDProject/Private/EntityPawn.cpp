@@ -36,6 +36,24 @@ void AEntityPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (bSliding)
+	{
+		FVector NewLocation = GetActorLocation() + (MoveDirection * SlideSpeed);
+		SetActorLocation(NewLocation);
+
+		if (FVector::Dist(NewLocation, SlidingDestination) <= 300)
+		{
+			if (haveSkeletaAnimation && SlideEndAnim != nullptr)
+				SkeletalMeshComponent->PlayAnimation(SlideEndAnim, false);
+		}
+
+
+		if (FVector::Dist(NewLocation, SlidingDestination) <= 1)
+		{
+			// 不播放Idle动画,而是让SlideEndAnim播放完整
+			bSliding = false;
+		}
+	}
 	
 	if (bMoving)
 	{
@@ -49,6 +67,36 @@ void AEntityPawn::Tick(float DeltaTime)
 			// play idle animation if this pawn has one
 			if (haveSkeletaAnimation && IdleAnim != nullptr)
 				SkeletalMeshComponent->PlayAnimation(IdleAnim, true);
+		}
+	}
+
+	if (bFloating)
+	{
+		FVector Layer2Location = GetActorLocation();
+		Layer2Location.Z = Layer2Z;
+		float FloatingOffset =10 * sin(FDateTime::Now().GetTimeOfDay().GetTotalMilliseconds()/500);
+		SetActorLocation(Layer2Location + FVector(0, 0, FloatingOffset));
+	}
+
+	if (bFlyMoving)
+	{
+		FVector currLocation = GetActorLocation();
+		if (bFlying)
+		{
+			SetActorLocation(currLocation + FVector(0, 0, FlySpeed));
+
+			if (currLocation.Z > Layer2Z - 1)
+			{
+				bFlyMoving = bFlying = bFalling = false;
+				bFloating = true;
+			}
+		}
+		else if (bFalling)
+		{
+			SetActorLocation(currLocation - FVector(0, 0, FlySpeed));
+
+			if (currLocation.Z < Layer1Z + 1)
+				bFlyMoving = bFlying = bFalling = false;
 		}
 	}
 
@@ -98,7 +146,7 @@ bool AEntityPawn::BeginMove(int AbsXdirection, int AbsYdirection, bool Controlle
 	// AbsXdirection and AbsYdirection are not supposed to be 0 at the same time
 	if (AbsXdirection == 0 && AbsYdirection == 0)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("something wrong!!!"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("something wrong at Begin Move1"));
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, this->GetHumanReadableName());
 		return true;
 	}
@@ -106,14 +154,14 @@ bool AEntityPawn::BeginMove(int AbsXdirection, int AbsYdirection, bool Controlle
 	// get GameInfo
 	TActorIterator<AGameInfo> iter(GetWorld());
 	checkf(iter, TEXT("There is no gameinfo"));
-	AGameInfo* TempGameInfo = *iter;
-	int Width = TempGameInfo->MapWidth;
-	int Length = TempGameInfo->MapLength;
+	AGameInfo* CurrGameInfo = *iter;
+	int Width = CurrGameInfo->MapWidth;
+	int Length = CurrGameInfo->MapLength;
 
 	// 记录物体的方向
 	FaceDirection.X = AbsXdirection;
 	FaceDirection.Y = AbsYdirection;
-	if (haveFace) // 如果是有朝向的物体则旋转
+	if (haveFace) // 如果是有朝向的物体则旋转到目标方向
 	{
 		float PawnYaw = 0.0f;
 		if (AbsYdirection == 0)
@@ -123,13 +171,13 @@ bool AEntityPawn::BeginMove(int AbsXdirection, int AbsYdirection, bool Controlle
 		SetActorRotation(FRotator(0.0f, PawnYaw, 0.0f));
 	}
 
-
 	// calculate destination
 	FVector PawnLocation = GetActorLocation();
 	int x = (PawnLocation.X + (Width - 1) * 50) / 100;
 	int y = (PawnLocation.Y + (Length - 1) * 50) / 100;
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Location : %d  %d"), x, y));
 	checkf(0 <= x && x < Width && 0 <= y && y < Length, TEXT("Location Wrong"));
+
 	int dest_x = x + AbsXdirection;
 	int dest_y = y + AbsYdirection;
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Dest Location : %d  %d"), dest_x, dest_y));
@@ -142,81 +190,133 @@ bool AEntityPawn::BeginMove(int AbsXdirection, int AbsYdirection, bool Controlle
 		return false;
 	}
 
-	UnitInfo DestUnitInfo = TempGameInfo->MapInfo[dest_x * Width + dest_y];
-	// destination is not vacant
-	
-	TArray<EObjectTags> CurrentMoveTags;
-	if(ControlledOrIndenpent == 1)
-		CurrentMoveTags = TempGameInfo->GetObjectTags(ERuleTags::You);
-	else
-		CurrentMoveTags = TempGameInfo->GetObjectTags(ERuleTags::Move);
+	UnitInfo DestUnitInfo = CurrGameInfo->MapInfo[dest_x * Width + dest_y];
 
-	TArray<EObjectTags> pushPawnTags = TempGameInfo->GetObjectTags(ERuleTags::Push);
-	this;// just for debug
-	if (!DestUnitInfo.isEmpty())
+	// 能够slide并且至少有一格滑动的空间
+	if (CurrGameInfo->ActiveRules.FindPair(ERuleTags::Slide, static_cast<ERuleTags>(this->Tag))
+		&& DestUnitInfo.isEmpty())
 	{
-		for (AParentPawn* pawn : DestUnitInfo.Objects)
+		while (0 <= dest_x && dest_x < Width && 0 <= dest_y && dest_y < Length)
 		{
-			// rule pawn could be pushed
-			if (pawn->Tag == EObjectTags::Rule)
+			DestUnitInfo = CurrGameInfo->MapInfo[dest_x * Width + dest_y];
+			// 也可以改成判断是否有unwalkable的物体
+			if (!DestUnitInfo.isEmpty())
+				break;
+
+			dest_x += AbsXdirection;
+			dest_y += AbsYdirection;
+		}
+
+		SlidingDestination.X = 100 * (dest_x - AbsXdirection) - (Width - 1) * 50;
+		SlidingDestination.Y = 100 * (dest_y - AbsYdirection) - (Length -1) * 50;
+		SlidingDestination.Z = GetActorLocation().Z;
+
+		bSliding = true;
+		MoveDirection.X = AbsXdirection;
+		MoveDirection.Y = AbsYdirection;
+
+		SkeletalMeshComponent->PlayAnimation(SlideBeginAnim, false);
+
+		return true;
+	}
+	// 不能slide就进行普通的判断
+	else
+	{
+		// destination is not vacant
+		TArray<EObjectTags> CurrentMoveTags;
+		if (ControlledOrIndenpent == 1)
+			CurrentMoveTags = CurrGameInfo->GetObjectTags(ERuleTags::You);
+		else
+			CurrentMoveTags = CurrGameInfo->GetObjectTags(ERuleTags::Move);
+
+		TArray<EObjectTags> pushPawnTags = CurrGameInfo->GetObjectTags(ERuleTags::Push);
+
+		if (!DestUnitInfo.isEmpty())
+		{
+			for (AParentPawn* pPawn : DestUnitInfo.Objects)
 			{
-				if (!pawn->BeginMove(AbsXdirection,AbsYdirection, ControlledOrIndenpent))
-					return false;
-			}
-			// test if the pawn at destination can walk by itself
-			else if (CurrentMoveTags.Find(pawn->Tag) != INDEX_NONE)
-			{
-				if (!pawn->BeginMove(AbsXdirection, AbsYdirection, ControlledOrIndenpent))// the pawn at destination can not walk by itself
+				if (pPawn->onLayer != onLayer)
+					continue;
+
+				// rule pawn could be pushed
+				if (pPawn->Tag == EObjectTags::Rule)
 				{
-					// test if we can walk on it
-					if (!pawn->bWalkable && !this->bWalkable)
+					if (!pPawn->BeginMove(AbsXdirection, AbsYdirection, ControlledOrIndenpent))
 						return false;
 				}
+				// test if the pawn at destination can walk by itself
+				else if (CurrentMoveTags.Find(pPawn->Tag) != INDEX_NONE)
+				{
+					if (!pPawn->BeginMove(AbsXdirection, AbsYdirection, ControlledOrIndenpent))// the pawn at destination can not walk by itself
+					{
+						// test if we can walk on it
+						if (!pPawn->bWalkable && !this->bWalkable)
+							return false;
+					}
+				}
+				// test if the pawn at destination can be pushed
+				else if (pushPawnTags.Find(pPawn->Tag) != INDEX_NONE)
+				{
+					if (!pPawn->BeginMove(AbsXdirection, AbsYdirection, ControlledOrIndenpent))
+						return false;
+				}
+				// destination has a pawn that we can not walk on
+				else if (this->Tag != pPawn->Tag)
+				{
+					if (!pPawn->bWalkable && !this->bWalkable)
+						return false;
+				}
+
 			}
-			// test if the pawn at destination can be pushed
-			else if (pushPawnTags.Find(pawn->Tag) != INDEX_NONE)
+		}
+
+		// the pawn has already begun to move
+		if (bMoving)
+			return true;
+		// set move begin
+		bMoving = true;
+		LocationBeforeMove = PawnLocation;
+		MoveDirection.X = AbsXdirection;
+		MoveDirection.Y = AbsYdirection;
+
+		// play animation if this pawn has one
+		if (haveSkeletaAnimation)
+		{
+			static bool walk_left_foot = 1;
+			if (walk_left_foot)
 			{
-				if (!pawn->BeginMove(AbsXdirection, AbsYdirection, ControlledOrIndenpent))
-					return false;
+				SkeletalMeshComponent->PlayAnimation(WalkAnim1, false);
+				walk_left_foot = 0;
 			}
-			// destination has a pawn that we can not walk on
-			else if (this->Tag != pawn->Tag)
+			else
 			{
-				if (!pawn->bWalkable && !this->bWalkable)
-					return false;
+				SkeletalMeshComponent->PlayAnimation(WalkAnim2, false);
+				walk_left_foot = 1;
 			}
 
 		}
-	}
-
-	// the pawn has already begun to move
-	if (bMoving)
 		return true;
-	// set move begin
-	bMoving = true;
-	LocationBeforeMove = PawnLocation;
-	MoveDirection.X = AbsXdirection;
-	MoveDirection.Y = AbsYdirection;
-
-	// play animation if this pawn has one
-	if (haveSkeletaAnimation)
-	{
-		static bool walk_left_foot = 1;
-		if (walk_left_foot)
-		{
-			SkeletalMeshComponent->PlayAnimation(WalkAnim1,false);
-			walk_left_foot = 0;
-		}
-		else
-		{
-			SkeletalMeshComponent->PlayAnimation(WalkAnim2, false);
-			walk_left_foot = 1;
-		}
-
 	}
-	return true;
 }
 
 bool AEntityPawn::isMoveDone() const  {
-	return !bMoving;
+	return !bMoving && !bFlyMoving && !bSliding;
+}
+
+void AEntityPawn::BeginFlyOrFall() {
+	bFlyMoving = true;
+	if (GetActorLocation().Z < Layer1Z + 1)//开始上升
+	{
+		bFlying = true;
+		onLayer = 2;
+	}
+	else//开始下降,下降前先将高度调整至layer2Z避免出现因为角色漂浮带来的误差
+	{
+		FVector currLocation = GetActorLocation();
+		currLocation.Z = Layer2Z;
+		SetActorLocation(currLocation);
+		bFalling = true;
+		bFloating = false;
+		onLayer = 1;
+	}
 }

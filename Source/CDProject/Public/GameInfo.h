@@ -12,6 +12,9 @@
 #include "RulePawn.h"
 #include "GameInfo.generated.h"
 
+const float Layer1Z = 100.0f;
+const float Layer2Z = 500.0f;
+
 struct UnitInfo
 {
 	UnitInfo() {};

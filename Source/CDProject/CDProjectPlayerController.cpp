@@ -99,6 +99,7 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 			case EActions::Left:
 			case EActions::Right:
 			case EActions::Wait:
+			case EActions::FlyOrFall:
 				ProcessMoveAction(Action);
 				break;
 
@@ -123,6 +124,7 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 		case EActions::Left:
 		case EActions::Right:
 		case EActions::Wait:
+		case EActions::FlyOrFall:
 			if (ProcessMoveActionDone())
 			{
 				bOperatingAction = false;
@@ -176,12 +178,20 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 void ACDProjectPlayerController::ProcessMoveAction(EActions Action) {
 	checkf(MyGameInfo, TEXT("we are not holding GameInfo"));
 
+	TArray<AEntityPawn*> pYouPawns = MyGameInfo->GetSelfPawns();
+	TArray<AEntityPawn*> pMovePawns = MyGameInfo->GetMovePawns();
+
+	// 这里还没有判断you是否有fly的属性
+	if (Action == EActions::FlyOrFall)
+	{
+		for (AEntityPawn* pYouPawn : pYouPawns)
+			pYouPawn->BeginFlyOrFall();
+		return;
+	}
+
 	if (Action == EActions::Wait)
 		bWaiting = true;
 
-	TArray<AEntityPawn*> pYouPawns = MyGameInfo->GetSelfPawns();
-	TArray<AEntityPawn*> pMovePawns = MyGameInfo->GetMovePawns();
-	
 	// 失去操控
 	if (pYouPawns.Num() == 0  && pMovePawns.Num() == 0)
 	{
@@ -234,8 +244,12 @@ void ACDProjectPlayerController::SetupInputComponent()
 
 	InputComponent->BindAction("Wait", IE_Pressed, this, &ACDProjectPlayerController::OnWait);
 
+	InputComponent->BindAction("Fly", IE_Pressed, this, &ACDProjectPlayerController::OnFly);
+
 	InputComponent->BindAction("CameraTurnLeft", IE_Pressed, this, &ACDProjectPlayerController::OnCameraTurnLeft);
 	InputComponent->BindAction("CameraTurnRight", IE_Pressed, this, &ACDProjectPlayerController::OnCameraTurnRight);
+
+	//InputComponent->RemoveActionBinding("MoveRight", IE_Pressed);
 }
 
 
@@ -263,6 +277,12 @@ void ACDProjectPlayerController::OnWait() {
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString(TEXT("Wait")));
 	bWaiting = true;
 	ActionQueue.Enqueue(EActions::Wait);
+}
+
+void ACDProjectPlayerController::OnFly() {
+	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString(TEXT("Fly")));
+	bWaiting = true;
+	ActionQueue.Enqueue(EActions::FlyOrFall);
 }
 
 void ACDProjectPlayerController::OnCameraTurnLeft() {

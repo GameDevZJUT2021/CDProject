@@ -581,15 +581,26 @@ bool AGameInfo::WinJudge() const{
 
 	for (UnitInfo unitInfo : MapInfo)
 	{
-		bool bWin = false, bYou = false;
+		bool bWinL1 = false, bYouL1 = false;
+		bool bWinL2 = false, bYouL2 = false;
 		for (AParentPawn* pPawn : unitInfo.Objects)
 		{
-			if (WinPawnTags.Find(pPawn->Tag) != INDEX_NONE)
-				bWin = true;
-			if (YouPawnTags.Find(pPawn->Tag) != INDEX_NONE)
-				bYou = true;
+			if (pPawn->onLayer == 1)
+			{
+				if (WinPawnTags.Find(pPawn->Tag) != INDEX_NONE)
+					bWinL1 = true;
+				if (YouPawnTags.Find(pPawn->Tag) != INDEX_NONE)
+					bYouL1 = true;
+			}
+			else if (pPawn->onLayer == 2)
+			{
+				if (WinPawnTags.Find(pPawn->Tag) != INDEX_NONE)
+					bWinL2 = true;
+				if (YouPawnTags.Find(pPawn->Tag) != INDEX_NONE)
+					bYouL2 = true;
+			}
  		}
-		if (bWin && bYou)
+		if ((bWinL1 && bYouL1) || (bWinL2 && bYouL2))
 			return true;
 	}
 
@@ -604,24 +615,50 @@ bool AGameInfo::DefeatJudge() const{
 
 	for (UnitInfo unitInfo : MapInfo)
 	{
-		bool bDefeat = false, bYou = false;
-		TArray<AParentPawn*> pYouPawns;
+		bool bDefeatL1 = false, bYouL1 = false;
+		bool bDefeatL2 = false, bYouL2 = false;
+		TArray<AParentPawn*> pYouPawnsL1;
+		TArray<AParentPawn*> pYouPawnsL2;
 		for (AParentPawn* pPawn : unitInfo.Objects)
 		{
-			if (DefeatPawnTags.Find(pPawn->Tag) != INDEX_NONE)
-				bDefeat = true;
-
-			if (YouPawnTags.Find(pPawn->Tag) != INDEX_NONE)
+			if (pPawn->onLayer == 1)
 			{
-				LivePawnNum++;
-				pYouPawns.Add(pPawn);
-				bYou = true;
+				if (DefeatPawnTags.Find(pPawn->Tag) != INDEX_NONE)
+					bDefeatL1 = true;
+
+				if (YouPawnTags.Find(pPawn->Tag) != INDEX_NONE)
+				{
+					LivePawnNum++;
+					pYouPawnsL1.Add(pPawn);
+					bYouL1 = true;
+				}
 			}
+			else if (pPawn->onLayer == 2)
+			{
+				if (DefeatPawnTags.Find(pPawn->Tag) != INDEX_NONE)
+					bDefeatL2 = true;
+
+				if (YouPawnTags.Find(pPawn->Tag) != INDEX_NONE)
+				{
+					LivePawnNum++;
+					pYouPawnsL2.Add(pPawn);
+					bYouL2 = true;
+				}
+			}
+
 		}
-		if (bDefeat && bYou)
+		if (bDefeatL1 && bYouL1)
 		{
 			// 销毁这个单元上每一个为You的Pawn
-			for (AParentPawn* pDyingPawn : pYouPawns)
+			for (AParentPawn* pDyingPawn : pYouPawnsL1)
+			{
+				LivePawnNum--;
+				pDyingPawn->Destroy();
+			}
+		}
+		if (bDefeatL2 && bYouL2)
+		{
+			for (AParentPawn* pDyingPawn : pYouPawnsL2)
 			{
 				LivePawnNum--;
 				pDyingPawn->Destroy();
