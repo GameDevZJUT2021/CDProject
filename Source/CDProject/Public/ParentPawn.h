@@ -41,6 +41,6 @@ public:
 	virtual bool BeginMove(int AbsXdirection, int AbsYdirection, bool ControlledOrIndenpent = 1);
 	virtual bool isMoveDone() const;
 
-
+	virtual void FallingDown();
 
 };

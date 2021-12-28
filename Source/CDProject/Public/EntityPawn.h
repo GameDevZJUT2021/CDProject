@@ -60,6 +60,8 @@ public:
 	virtual bool BeginMove(int AbsXdirection, int AbsYdirection, bool ControlledOrIndenpent =1) override;
 	virtual bool isMoveDone() const override;
 
+	void FallingDown() override;
+
 	void BeginFlyOrFall();
 
 protected:

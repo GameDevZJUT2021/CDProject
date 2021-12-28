@@ -15,11 +15,10 @@ AGameInfo::AGameInfo()
 }
 
 // Init the MapInfo
-void AGameInfo::Init(int width, int length)
+void AGameInfo::Init()
 {
-	MapWidth = width;
-	MapLength = length;
-	MapInfo.Init(UnitInfo(), width * length);
+
+	MapInfo.Init(UnitInfo(), MapLength * MapWidth);
 
 	RulesPool.Add(ERuleTags::You, ERuleTags::Baba);
 	RulesPool.Add(ERuleTags::You, ERuleTags::Tree);
@@ -719,4 +718,10 @@ void AGameInfo::ChangeEntity(AEntityPawn* pSrcPawn, const AExampleEntityPawn* co
 
 	pSrcPawn->isSelfRotating = pDestPawn->isSelfRotating;
 	pSrcPawn->RotateSpeed = pDestPawn->RotateSpeed;
+}
+
+bool AGameInfo::OnLayer2Land(const AParentPawn* pawn) const {
+	FVector location = pawn->GetActorLocation();
+	return location.X < WestNorthPoint.X&& location.X > EastSouthPoint.X 
+		 && location.Y < EastSouthPoint.Y&& location.Y > WestNorthPoint.Y;
 }

@@ -13,12 +13,12 @@ ARulePawn::ARulePawn() {
 	StaticMeshComponent = CreateDefaultSubobject <UStaticMeshComponent>(TEXT("StaticMeshComponent"));
 	StaticMeshComponent->SetupAttachment(RootComponent);
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMeshAsset(TEXT("/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMeshAsset(TEXT("/Game/StaticMesh/rule/rule/rule6/6face1.6face1"));
 	if (CubeMeshAsset.Succeeded())
 	{
 		StaticMeshComponent->SetStaticMesh(CubeMeshAsset.Object);
 		StaticMeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
-		StaticMeshComponent->SetWorldScale3D(FVector(1.0f));
+		StaticMeshComponent->SetWorldScale3D(FVector(0.55f));
 	}
 
 	Tag = EObjectTags::Rule;
@@ -35,6 +35,15 @@ void ARulePawn::BeginPlay() {
 void ARulePawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (bFalling)
+	{
+		FVector currLocation = GetActorLocation();
+		SetActorLocation(currLocation - FVector(0, 0, FlySpeed));
+
+		if (currLocation.Z < Layer1Z + 1)
+			bFalling = false;
+	}
 
 
 	if (bMoving)
@@ -157,5 +166,10 @@ bool ARulePawn::BeginMove(int AbsXdirection, int AbsYdirection, bool ControlledO
 }
 
 bool ARulePawn::isMoveDone() const{
-	return !bMoving;
+	return !bMoving && !bFalling;
+}
+
+void ARulePawn::FallingDown() {
+	bFalling = true;
+	onLayer = 1;
 }

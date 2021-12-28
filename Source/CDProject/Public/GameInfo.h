@@ -32,13 +32,13 @@ class CDPROJECT_API AGameInfo : public AActor
 public:
 	AGameInfo();
 
-	void Init(int width, int length);
+	void Init();
 
-	UPROPERTY(BlueprintReadWrite,EditAnywhere)
-	int test;
+	UPROPERTY(EditAnywhere, Category = "Basic")
+	int MapLength = 25;
+	UPROPERTY(EditAnywhere, Category = "Basic")
+	int MapWidth = 25;
 
-	int MapLength;
-	int MapWidth;
 	TArray	<UnitInfo> MapInfo; // 2D array. UE4 does not support 2D array naturally, so use a simple conversion instead
 	TMultiMap<ERuleTags, ERuleTags> ActiveRules;
 	TMultiMap<ERuleTags, ERuleTags> RulesPool;
@@ -53,6 +53,13 @@ public:
 
 	bool WinJudge() const;
 	bool DefeatJudge() const;
+
+	UPROPERTY(EditAnywhere, Category = "Layer2")
+	FVector WestNorthPoint;
+	UPROPERTY(EditAnywhere, Category = "Layer2")
+	FVector EastSouthPoint;
+
+	bool OnLayer2Land(const AParentPawn*) const;
 
 protected:
 	// Called when the game starts or when spawned

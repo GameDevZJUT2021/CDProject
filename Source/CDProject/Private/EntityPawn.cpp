@@ -305,18 +305,27 @@ bool AEntityPawn::isMoveDone() const  {
 
 void AEntityPawn::BeginFlyOrFall() {
 	bFlyMoving = true;
-	if (GetActorLocation().Z < Layer1Z + 1)//开始上升
+	// Obtain GameInfo
+	TActorIterator<AGameInfo> iterGameInfo(GetWorld());
+	checkf(iterGameInfo, TEXT("There is no GameInfo"));
+
+	if (GetActorLocation().Z < Layer1Z + 1)//处在第一层,开始上升
 	{
 		bFlying = true;
 		onLayer = 2;
 	}
-	else//开始下降,下降前先将高度调整至layer2Z避免出现因为角色漂浮带来的误差
+	else if ( ! iterGameInfo->OnLayer2Land(this))//处在第二层,如果不处在第二层的陆地上,则可以下降
 	{
-		FVector currLocation = GetActorLocation();
-		currLocation.Z = Layer2Z;
-		SetActorLocation(currLocation);
-		bFalling = true;
-		bFloating = false;
-		onLayer = 1;
+		FallingDown();
 	}
+}
+
+void AEntityPawn::FallingDown() {
+	//开始下降,下降前先将高度调整至layer2Z避免出现因为角色漂浮带来的误差
+	FVector currLocation = GetActorLocation();
+	currLocation.Z = Layer2Z;
+	SetActorLocation(currLocation);
+	bFalling = true;
+	bFloating = false;
+	onLayer = 1;
 }

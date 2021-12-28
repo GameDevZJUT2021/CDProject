@@ -45,3 +45,7 @@ bool AParentPawn::isMoveDone() const {
 bool AParentPawn::BeginMove(int AbsXdirection, int AbsYdirection, bool ControlledOrIndenpent){
 	return false;
 }
+
+void AParentPawn::FallingDown() {
+	// do nothing
+}
