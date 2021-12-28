@@ -34,8 +34,11 @@ public:
 
 	void Init(int width, int length);
 
-	UPROPERTY(BlueprintReadWrite,EditAnywhere)
-	int test;
+	UPROPERTY(BlueprintReadWrite)
+	TArray <FString> ActiveRulesStore;
+
+	UPROPERTY(BlueprintReadWrite)
+	FString AllActiveRules;
 
 	int MapLength;
 	int MapWidth;
