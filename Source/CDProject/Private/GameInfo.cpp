@@ -248,6 +248,7 @@ bool AGameInfo::RuleIsVisible(ECameraAbsLocations CameraAbsLocation, const TArra
 
 void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 	ActiveRules.Empty();
+	ActiveRulesStore.Empty();
 	TArray<int> MapInfo_X, MapInfo_Y;
 	TArray<ARulePawn*> pRulePawnArray;
 
@@ -442,7 +443,14 @@ void AGameInfo::UpdateRule(ECameraAbsLocations CameraAbsLocation) {
 			}
 		}
 	}
+	AllActiveRules = "";
+	for (auto Iter(ActiveRulesStore.CreateIterator());Iter;Iter++)
+	{
+		AllActiveRules += (*Iter + "\n") ;
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, AllActiveRules);
 	UpdateLightEffect();
+
 }
 
 void AGameInfo::TryToActivateRule(ARulePawn* pFirstRulePawn, ARulePawn* pLastRulePawn, ARulePawn* pIsRulePawn, enum Face face) {
@@ -454,6 +462,10 @@ void AGameInfo::TryToActivateRule(ARulePawn* pFirstRulePawn, ARulePawn* pLastRul
 		if (isObject(pFirstRulePawn->TopTag) && isAttribute(pLastRulePawn->TopTag))
 		{
 			ActiveRules.Add(pLastRulePawn->TopTag, pFirstRulePawn->TopTag);
+			FString lastRule = StaticEnum<ERuleTags>()->GetNameStringByValue(static_cast<int64>(pLastRulePawn->TopTag));
+			FString firstRule = StaticEnum<ERuleTags>()->GetNameStringByValue(static_cast<int64>(pFirstRulePawn->TopTag));
+			FString activeRule = firstRule + " is " + lastRule;
+			ActiveRulesStore.Add(activeRule);
 			// turn on the light effect in UpdateLightEffect function
 			pLastRulePawn->TopTagActive = true;
 			pFirstRulePawn->TopTagActive = true;
@@ -471,6 +483,10 @@ void AGameInfo::TryToActivateRule(ARulePawn* pFirstRulePawn, ARulePawn* pLastRul
 		if (isObject(pFirstRulePawn->SouthTag) && isAttribute(pLastRulePawn->SouthTag))
 		{
 			ActiveRules.Add(pLastRulePawn->SouthTag, pFirstRulePawn->SouthTag);
+			FString lastRule = StaticEnum<ERuleTags>()->GetNameStringByValue(static_cast<int64>(pLastRulePawn->SouthTag));
+			FString firstRule = StaticEnum<ERuleTags>()->GetNameStringByValue(static_cast<int64>(pFirstRulePawn->SouthTag));
+			FString activeRule = firstRule + " is " + lastRule;
+			ActiveRulesStore.Add(activeRule);
 			// turn on the light effect in UpdateLightEffect function
 			pLastRulePawn->SouthTagActive = true;
 			pFirstRulePawn->SouthTagActive = true;
@@ -488,6 +504,10 @@ void AGameInfo::TryToActivateRule(ARulePawn* pFirstRulePawn, ARulePawn* pLastRul
 		if (isObject(pFirstRulePawn->WestTag) && isAttribute(pLastRulePawn->WestTag))
 		{
 			ActiveRules.Add(pLastRulePawn->WestTag, pFirstRulePawn->WestTag);
+			FString lastRule = StaticEnum<ERuleTags>()->GetNameStringByValue(static_cast<int64>(pLastRulePawn->WestTag));
+			FString firstRule = StaticEnum<ERuleTags>()->GetNameStringByValue(static_cast<int64>(pFirstRulePawn->WestTag));
+			FString activeRule = firstRule + " is " + lastRule;
+			ActiveRulesStore.Add(activeRule);
 			// turn on the light effect in UpdateLightEffect function
 			pLastRulePawn->WestTagActive = true;
 			pFirstRulePawn->WestTagActive = true;
@@ -505,6 +525,10 @@ void AGameInfo::TryToActivateRule(ARulePawn* pFirstRulePawn, ARulePawn* pLastRul
 		if (isObject(pFirstRulePawn->EastTag) && isAttribute(pLastRulePawn->EastTag))
 		{
 			ActiveRules.Add(pLastRulePawn->EastTag, pFirstRulePawn->EastTag);
+			FString lastRule = StaticEnum<ERuleTags>()->GetNameStringByValue(static_cast<int64>(pLastRulePawn->EastTag));
+			FString firstRule = StaticEnum<ERuleTags>()->GetNameStringByValue(static_cast<int64>(pFirstRulePawn->EastTag));
+			FString activeRule = firstRule + " is " + lastRule;
+			ActiveRulesStore.Add(activeRule);
 			// turn on the light effect in UpdateLightEffect function
 			pLastRulePawn->EastTagActive = true;
 			pFirstRulePawn->EastTagActive = true;
@@ -522,6 +546,10 @@ void AGameInfo::TryToActivateRule(ARulePawn* pFirstRulePawn, ARulePawn* pLastRul
 		if (isObject(pFirstRulePawn->NorthTag) && isAttribute(pLastRulePawn->NorthTag))
 		{
 			ActiveRules.Add(pLastRulePawn->NorthTag, pFirstRulePawn->NorthTag);
+			FString lastRule = StaticEnum<ERuleTags>()->GetNameStringByValue(static_cast<int64>(pLastRulePawn->NorthTag));
+			FString firstRule = StaticEnum<ERuleTags>()->GetNameStringByValue(static_cast<int64>(pFirstRulePawn->NorthTag));
+			FString activeRule = firstRule + " is " + lastRule;
+			ActiveRulesStore.Add(activeRule);
 			// turn on the light effect in UpdateLightEffect function
 			pLastRulePawn->NorthTagActive = true;
 			pFirstRulePawn->NorthTagActive = true;

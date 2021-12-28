@@ -39,6 +39,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Basic")
 	int MapWidth = 25;
 
+	UPROPERTY(BlueprintReadWrite)
+	TArray <FString> ActiveRulesStore;
+
+	UPROPERTY(BlueprintReadWrite)
+	FString AllActiveRules;
+
 	TArray	<UnitInfo> MapInfo; // 2D array. UE4 does not support 2D array naturally, so use a simple conversion instead
 	TMultiMap<ERuleTags, ERuleTags> ActiveRules;
 	TMultiMap<ERuleTags, ERuleTags> RulesPool;
