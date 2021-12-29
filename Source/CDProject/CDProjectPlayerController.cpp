@@ -27,7 +27,7 @@ void ACDProjectPlayerController::BeginPlay() {
 		MyObservePawn = *iterObservePawn;
 
 		// Obtain GameInfo
-		TActorIterator<AGameInfo> iterGameInfo(GetWorld());
+		TActorIterator<AMyGameInfo> iterGameInfo(GetWorld());
 		checkf(iterGameInfo, TEXT("There is no GameInfo"));
 		MyGameInfo = *iterGameInfo;
 		MyGameInfo->Init();
@@ -184,6 +184,7 @@ bool ACDProjectPlayerController::ProcessMoveActionDone() {
 	}
 
 	// 此时发出的所有动作已经完成,但是还要检测是否有物体会掉落
+	// 再次检测时不会再执行到这里,因为isMoveDone也包含了Falling的动作
 	bool retVal = true;
 	TArray<EObjectTags> flyObjectTags = MyGameInfo->GetObjectTags(ERuleTags::Fly);
 	for (TActorIterator<AParentPawn> iter(GetWorld()); iter; ++iter)

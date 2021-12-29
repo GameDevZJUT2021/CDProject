@@ -34,9 +34,9 @@ ACDProjectGameMode::ACDProjectGameMode()
 
 void ACDProjectGameMode::StartPlay() {
 	Super::StartPlay();
-	TActorIterator<AGameInfo> iter(GetWorld());
+	TActorIterator<AMyGameInfo> iter(GetWorld());
 	checkf(iter, TEXT("There is no gameinfo"));
-	AGameInfo* GameInfoToInit = *iter;
+	AMyGameInfo* GameInfoToInit = *iter;
 	GameInfoToInit->UpdateMapInfo();
 	GameInfoToInit->UpdateRule(ECameraAbsLocations::South);
 }

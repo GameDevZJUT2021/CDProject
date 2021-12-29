@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "EntityPawn.h"
-#include "GameInfo.h"
+#include "MyGameInfo.h"
 
 AEntityPawn::AEntityPawn() {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -152,9 +152,9 @@ bool AEntityPawn::BeginMove(int AbsXdirection, int AbsYdirection, bool Controlle
 	}
 	
 	// get GameInfo
-	TActorIterator<AGameInfo> iter(GetWorld());
+	TActorIterator<AMyGameInfo> iter(GetWorld());
 	checkf(iter, TEXT("There is no gameinfo"));
-	AGameInfo* CurrGameInfo = *iter;
+	AMyGameInfo* CurrGameInfo = *iter;
 	int Width = CurrGameInfo->MapWidth;
 	int Length = CurrGameInfo->MapLength;
 
@@ -190,7 +190,7 @@ bool AEntityPawn::BeginMove(int AbsXdirection, int AbsYdirection, bool Controlle
 		return false;
 	}
 
-	UnitInfo DestUnitInfo = CurrGameInfo->MapInfo[dest_x * Width + dest_y];
+	FUnitInfo DestUnitInfo = CurrGameInfo->MapInfo[dest_x * Width + dest_y];
 
 	// 能够slide并且至少有一格滑动的空间
 	if (CurrGameInfo->ActiveRules.FindPair(ERuleTags::Slide, static_cast<ERuleTags>(this->Tag))
@@ -306,7 +306,7 @@ bool AEntityPawn::isMoveDone() const  {
 void AEntityPawn::BeginFlyOrFall() {
 	bFlyMoving = true;
 	// Obtain GameInfo
-	TActorIterator<AGameInfo> iterGameInfo(GetWorld());
+	TActorIterator<AMyGameInfo> iterGameInfo(GetWorld());
 	checkf(iterGameInfo, TEXT("There is no GameInfo"));
 
 	if (GetActorLocation().Z < Layer1Z + 1)//处在第一层,开始上升
@@ -322,6 +322,7 @@ void AEntityPawn::BeginFlyOrFall() {
 
 void AEntityPawn::FallingDown() {
 	//开始下降,下降前先将高度调整至layer2Z避免出现因为角色漂浮带来的误差
+	bFlyMoving = true;
 	FVector currLocation = GetActorLocation();
 	currLocation.Z = Layer2Z;
 	SetActorLocation(currLocation);

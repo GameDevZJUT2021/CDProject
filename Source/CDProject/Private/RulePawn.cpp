@@ -2,7 +2,7 @@
 
 
 #include "RulePawn.h"
-#include "GameInfo.h"
+#include "MyGameInfo.h"
 
 ARulePawn::ARulePawn() {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -84,9 +84,9 @@ bool ARulePawn::BeginIndependentMove() {
 
 bool ARulePawn::BeginMove(int AbsXdirection, int AbsYdirection, bool ControlledOrIndenpent) {
 	// get GameInfo
-	TActorIterator<AGameInfo> iter(GetWorld());
+	TActorIterator<AMyGameInfo> iter(GetWorld());
 	checkf(iter, TEXT("There is no gameinfo"));
-	AGameInfo* TempGameInfo = *iter;
+	AMyGameInfo* TempGameInfo = *iter;
 	int Width = TempGameInfo->MapWidth;
 	int Length = TempGameInfo->MapLength;
 
@@ -108,7 +108,7 @@ bool ARulePawn::BeginMove(int AbsXdirection, int AbsYdirection, bool ControlledO
 		return false;
 	}
 
-	UnitInfo DestUnitInfo = TempGameInfo->MapInfo[dest_x * Width + dest_y];
+	FUnitInfo DestUnitInfo = TempGameInfo->MapInfo[dest_x * Width + dest_y];
 	// destination is not vacant
 	TArray<EObjectTags> CurrentMoveTags;
 	if (ControlledOrIndenpent == 1)

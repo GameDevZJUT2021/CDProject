@@ -2,6 +2,9 @@
 #include "UObject/Class.h"
 #include "CommonEnum.generated.h"
 
+const float Layer1Z = 100.0f;
+const float Layer2Z = 500.0f;
+
 enum class EActions : char
 { Forward, Back, Left, Right, Wait, FlyOrFall, CameraTurnLeft, CameraTurnRight };
 

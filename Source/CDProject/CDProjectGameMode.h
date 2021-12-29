@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "GameInfo.h"
+#include "MyGameInfo.h"
 #include "CDProjectGameMode.generated.h"
 
 UCLASS(minimalapi)
@@ -17,7 +17,7 @@ public:
 
 	void StartPlay() override;
 
-	AGameInfo* MyGameInfo;
+	AMyGameInfo* MyGameInfo;
 };
 
 
