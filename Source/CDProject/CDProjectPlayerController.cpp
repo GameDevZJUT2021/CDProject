@@ -28,9 +28,19 @@ void ACDProjectPlayerController::BeginPlay() {
 
 		// Obtain GameInfo
 		TActorIterator<AMyGameInfo> iterGameInfo(GetWorld());
-		checkf(iterGameInfo, TEXT("There is no GameInfo"));
-		MyGameInfo = *iterGameInfo;
-		MyGameInfo->Init();
+		if (iterGameInfo)
+		{
+			MyGameInfo = *iterGameInfo;
+			MyGameInfo->Init();
+		}
+		else
+		{
+			// Spawn a default GameInfo
+			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString(TEXT("Use Default Gameinfo")));
+			MyGameInfo = World->SpawnActor<AMyGameInfo>();
+			MyGameInfo->Init();
+		}
+
 	}
 }
 
