@@ -22,53 +22,24 @@ void ACDProjectPlayerController::BeginPlay() {
 	if (World)
 	{
 		// Obtain a ObserveCamera
-		TActorIterator<AObservePawn> iter(GetWorld());
-		checkf(iter, TEXT("There is no ObserverPawn"));
-		MyObservePawn = *iter;
+		TActorIterator<AObservePawn> iterObservePawn(GetWorld());
+		checkf(iterObservePawn, TEXT("There is no ObserverPawn"));
+		MyObservePawn = *iterObservePawn;
 
-		/*
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.bNoFail = 1;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		// Spawn a test Walkable Entity Pawn Water
-		Location = FVector(200.0f, 0.0f, 55.0f);// a little bit higher than 50, avoid collision with ground
-		Rotation = FRotator(0.0f, 0.0f, 0.0f);
-		AEntityPawn* WaterEntityPawn = World->SpawnActor<AEntityPawn>(Location, Rotation, SpawnParams);
-		WaterEntityPawn->Tag = EObjectTags::Water;
-		WaterEntityPawn->bWalkable = true;
-
-		// Spawn a test UnWalkable Entity Pawn Tree
-		Location = FVector(0.0f, 0.0f, 55.0f);
-		Rotation = FRotator(0.0f, 0.0f, 0.0f);
-		AEntityPawn* TreeEntityPawn = World->SpawnActor<AEntityPawn>(Location, Rotation, SpawnParams);
-		TreeEntityPawn->Tag = EObjectTags::Tree;
-		TreeEntityPawn->bWalkable = false;
-
-		// Spawn a test Walkable Entity Pawn Baba
-		Location = FVector(200.0f, 200.0f, 55.0f);
-		Rotation = FRotator(0.0f, 0.0f, 0.0f);
-		AEntityPawn* BabaEntityPawn = World->SpawnActor<AEntityPawn>(Location, Rotation, SpawnParams);
-		BabaEntityPawn->Tag = EObjectTags::Baba;
-		BabaEntityPawn->bWalkable = false;
-
-		// Spawn a test Rule Pawn
-		Location = FVector(1000.0f, 200.0f, 50.0f);
-		Rotation = FRotator(0.0f, 0.0f, 0.0f);
-		ARulePawn* RulePawn = World->SpawnActor<ARulePawn>(Location, Rotation, SpawnParams);
-		RulePawn->Tag = EObjectTags::Rule;
-		RulePawn->bWalkable = false;
-		*/
-
-		// Spawn GameInfo
-		MyGameInfo = World->SpawnActor<AGameInfo>();
-		MyGameInfo->Init(25, 25);
-
-		/*
-		MyGameInfo->MapInfo[LocationToMapIndex(200, 0)].Objects.Init(WaterEntityPawn, 1);
-		MyGameInfo->MapInfo[LocationToMapIndex(0, 0)].Objects.Init(TreeEntityPawn, 1);
-		MyGameInfo->MapInfo[LocationToMapIndex(200, 200)].Objects.Init(BabaEntityPawn, 1);
-		MyGameInfo->MapInfo[LocationToMapIndex(1000, 200)].Objects.Init(RulePawn, 1);
-		*/
+		// Obtain GameInfo
+		TActorIterator<AMyGameInfo> iterGameInfo(GetWorld());
+		if (iterGameInfo)
+		{
+			MyGameInfo = *iterGameInfo;
+			MyGameInfo->Init();
+		}
+		else
+		{
+			// Spawn a default GameInfo
+			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString(TEXT("Use Default Gameinfo")));
+			MyGameInfo = World->SpawnActor<AMyGameInfo>();
+			MyGameInfo->Init();
+		}
 
 	}
 }
@@ -99,6 +70,7 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 			case EActions::Left:
 			case EActions::Right:
 			case EActions::Wait:
+			case EActions::FlyOrFall:
 				ProcessMoveAction(Action);
 				break;
 
@@ -123,6 +95,7 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 		case EActions::Left:
 		case EActions::Right:
 		case EActions::Wait:
+		case EActions::FlyOrFall:
 			if (ProcessMoveActionDone())
 			{
 				bOperatingAction = false;
@@ -176,12 +149,23 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 void ACDProjectPlayerController::ProcessMoveAction(EActions Action) {
 	checkf(MyGameInfo, TEXT("we are not holding GameInfo"));
 
+	TArray<AEntityPawn*> pYouPawns = MyGameInfo->GetSelfPawns();
+	TArray<AEntityPawn*> pMovePawns = MyGameInfo->GetMovePawns();
+
+	if (Action == EActions::FlyOrFall)
+	{
+		TArray<EObjectTags> flyObjectTags = MyGameInfo->GetObjectTags(ERuleTags::Fly);
+		for (AEntityPawn* pYouPawn : pYouPawns)
+		{
+			if (flyObjectTags.Find(pYouPawn->Tag) != INDEX_NONE)// 具有fly的属性
+				pYouPawn->BeginFlyOrFall();
+		}
+		return;
+	}
+
 	if (Action == EActions::Wait)
 		bWaiting = true;
 
-	TArray<AEntityPawn*> pYouPawns = MyGameInfo->GetSelfPawns();
-	TArray<AEntityPawn*> pMovePawns = MyGameInfo->GetMovePawns();
-	
 	// 失去操控
 	if (pYouPawns.Num() == 0  && pMovePawns.Num() == 0)
 	{
@@ -208,7 +192,24 @@ bool ACDProjectPlayerController::ProcessMoveActionDone() {
 		AEntityPawn* EntityPawn = *iter;
 		if (!EntityPawn->isMoveDone()) return false;
 	}
-	return true;
+
+	// 此时发出的所有动作已经完成,但是还要检测是否有物体会掉落
+	// 再次检测时不会再执行到这里,因为isMoveDone也包含了Falling的动作
+	bool retVal = true;
+	TArray<EObjectTags> flyObjectTags = MyGameInfo->GetObjectTags(ERuleTags::Fly);
+	for (TActorIterator<AParentPawn> iter(GetWorld()); iter; ++iter)
+	{
+		AParentPawn* pawn = *iter;
+		if (!MyGameInfo->OnLayer2Land(pawn) && pawn->GetActorLocation().Z + 1 > Layer2Z)
+		{
+			if (pawn->Tag == EObjectTags::Rule || flyObjectTags.Find(pawn->Tag) == INDEX_NONE)//这里要对所有要下落的物体发出下落的信号
+			{
+				pawn->FallingDown();
+				retVal = false;
+			}
+		}
+	}
+	return retVal;
 }
 
 
@@ -234,8 +235,12 @@ void ACDProjectPlayerController::SetupInputComponent()
 
 	InputComponent->BindAction("Wait", IE_Pressed, this, &ACDProjectPlayerController::OnWait);
 
+	InputComponent->BindAction("Fly", IE_Pressed, this, &ACDProjectPlayerController::OnFly);
+
 	InputComponent->BindAction("CameraTurnLeft", IE_Pressed, this, &ACDProjectPlayerController::OnCameraTurnLeft);
 	InputComponent->BindAction("CameraTurnRight", IE_Pressed, this, &ACDProjectPlayerController::OnCameraTurnRight);
+
+	//InputComponent->RemoveActionBinding("MoveRight", IE_Pressed);
 }
 
 
@@ -263,6 +268,12 @@ void ACDProjectPlayerController::OnWait() {
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString(TEXT("Wait")));
 	bWaiting = true;
 	ActionQueue.Enqueue(EActions::Wait);
+}
+
+void ACDProjectPlayerController::OnFly() {
+	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString(TEXT("Fly")));
+	bWaiting = true;
+	ActionQueue.Enqueue(EActions::FlyOrFall);
 }
 
 void ACDProjectPlayerController::OnCameraTurnLeft() {

@@ -43,6 +43,11 @@ public:
 	UAnimationAsset* IdleAnim;
 
 	UPROPERTY(EditAnywhere, Category = "Animation")
+	UAnimationAsset* SlideBeginAnim;
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	UAnimationAsset* SlideEndAnim;
+
+	UPROPERTY(EditAnywhere, Category = "Animation")
 	bool isSelfRotating = 0;
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	uint8 RotateSpeed = 0;
@@ -55,10 +60,24 @@ public:
 	virtual bool BeginMove(int AbsXdirection, int AbsYdirection, bool ControlledOrIndenpent =1) override;
 	virtual bool isMoveDone() const override;
 
+	void FallingDown() override;
+
+	void BeginFlyOrFall();
+
 protected:
 	const float Speed = 10.0f;
 	FVector MoveDirection;
 	bool bMoving = false;
 	FVector LocationBeforeMove;
 
+	bool bSliding = false;
+	FVector SlidingDestination;
+	const float SlideSpeed = 20.0f;
+
+
+	bool bFlyMoving = false;//是否正在上升或下降
+	const float FlySpeed = 10.0f;
+	bool bFlying = false;//正在上升
+	bool bFalling = false;//正在下降
+	bool bFloating = false;//正漂浮在空中,这个变量用于让角色在空中上下浮动
 };

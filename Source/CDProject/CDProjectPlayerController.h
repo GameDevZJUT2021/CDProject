@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "ObservePawn.h"
-#include "GameInfo.h"
+#include "MyGameInfo.h"
 #include "CommonEnum.h"
 #include "CDProjectPlayerController.generated.h"
 
@@ -27,7 +27,7 @@ protected:
 	AObservePawn* MyObservePawn;
 
 	UPROPERTY(VisibleAnywhere)
-	AGameInfo* MyGameInfo;
+	AMyGameInfo* MyGameInfo;
 
 	// Begin PlayerController interface
 	virtual void BeginPlay() override;
@@ -46,6 +46,7 @@ protected:
 	void OnMoveBack();
 
 	void OnWait();
+	void OnFly();
 
 	void OnCameraTurnLeft();
 	void OnCameraTurnRight();

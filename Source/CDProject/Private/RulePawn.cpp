@@ -2,7 +2,7 @@
 
 
 #include "RulePawn.h"
-#include "GameInfo.h"
+#include "MyGameInfo.h"
 
 ARulePawn::ARulePawn() {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -13,12 +13,12 @@ ARulePawn::ARulePawn() {
 	StaticMeshComponent = CreateDefaultSubobject <UStaticMeshComponent>(TEXT("StaticMeshComponent"));
 	StaticMeshComponent->SetupAttachment(RootComponent);
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMeshAsset(TEXT("/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMeshAsset(TEXT("/Game/StaticMesh/rule/rule/rule6/6face1.6face1"));
 	if (CubeMeshAsset.Succeeded())
 	{
 		StaticMeshComponent->SetStaticMesh(CubeMeshAsset.Object);
 		StaticMeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
-		StaticMeshComponent->SetWorldScale3D(FVector(1.0f));
+		StaticMeshComponent->SetWorldScale3D(FVector(0.55f));
 	}
 
 	Tag = EObjectTags::Rule;
@@ -35,6 +35,15 @@ void ARulePawn::BeginPlay() {
 void ARulePawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (bFalling)
+	{
+		FVector currLocation = GetActorLocation();
+		SetActorLocation(currLocation - FVector(0, 0, FlySpeed));
+
+		if (currLocation.Z < Layer1Z + 1)
+			bFalling = false;
+	}
 
 
 	if (bMoving)
@@ -75,9 +84,9 @@ bool ARulePawn::BeginIndependentMove() {
 
 bool ARulePawn::BeginMove(int AbsXdirection, int AbsYdirection, bool ControlledOrIndenpent) {
 	// get GameInfo
-	TActorIterator<AGameInfo> iter(GetWorld());
+	TActorIterator<AMyGameInfo> iter(GetWorld());
 	checkf(iter, TEXT("There is no gameinfo"));
-	AGameInfo* TempGameInfo = *iter;
+	AMyGameInfo* TempGameInfo = *iter;
 	int Width = TempGameInfo->MapWidth;
 	int Length = TempGameInfo->MapLength;
 
@@ -99,7 +108,7 @@ bool ARulePawn::BeginMove(int AbsXdirection, int AbsYdirection, bool ControlledO
 		return false;
 	}
 
-	UnitInfo DestUnitInfo = TempGameInfo->MapInfo[dest_x * Width + dest_y];
+	FUnitInfo DestUnitInfo = TempGameInfo->MapInfo[dest_x * Width + dest_y];
 	// destination is not vacant
 	TArray<EObjectTags> CurrentMoveTags;
 	if (ControlledOrIndenpent == 1)
@@ -157,5 +166,10 @@ bool ARulePawn::BeginMove(int AbsXdirection, int AbsYdirection, bool ControlledO
 }
 
 bool ARulePawn::isMoveDone() const{
-	return !bMoving;
+	return !bMoving && !bFalling;
+}
+
+void ARulePawn::FallingDown() {
+	bFalling = true;
+	onLayer = 1;
 }

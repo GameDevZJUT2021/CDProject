@@ -78,10 +78,15 @@ public:
 	virtual bool BeginMove(int AbsXdirection, int AbsYdirection, bool ControlledOrIndenpent = 1) override;
 	virtual bool isMoveDone() const override;
 
+	void FallingDown() override;
+
 protected:
 	const float Speed = 10.0f;
 	FVector MoveDirection;
 	bool bMoving = false;
 	FVector LocationBeforeMove;
-	
+
+	bool bFlyMoving = false;//是否正在上升或下降
+	const float FlySpeed = 10.0f;
+	bool bFalling = false;//正在下降
 };
