@@ -196,16 +196,41 @@ bool AEntityPawn::BeginMove(int AbsXdirection, int AbsYdirection, bool Controlle
 	if (CurrGameInfo->ActiveRules.FindPair(ERuleTags::Slide, static_cast<ERuleTags>(this->Tag))
 		&& DestUnitInfo.isEmpty())
 	{
+		int SlideStack = 0;
 		while (0 <= dest_x && dest_x < Width && 0 <= dest_y && dest_y < Length)
 		{
 			DestUnitInfo = CurrGameInfo->MapInfo[dest_x * Width + dest_y];
-			// 也可以改成判断是否有unwalkable的物体
+
+			bool shouldStop = false;
 			if (!DestUnitInfo.isEmpty())
+			{
+				for (auto& pawn : DestUnitInfo.Objects)
+				{
+					if (pawn->Tag == EObjectTags::Rule)
+					{
+						shouldStop = true;
+						break;
+					}
+					else if (pawn->bWalkable == false)
+					{
+						if (CurrGameInfo->ActiveRules.FindPair(ERuleTags::Slide, static_cast<ERuleTags>(pawn->Tag)))//这一格的Pawn一起滑动
+							SlideStack++;
+						else
+							shouldStop = true;
+					}
+				}
+			}
+
+			if(shouldStop)
 				break;
 
 			dest_x += AbsXdirection;
 			dest_y += AbsYdirection;
 		}
+
+		dest_x -= SlideStack * AbsXdirection;
+		dest_y -= SlideStack * AbsYdirection;
+
 
 		SlidingDestination.X = 100 * (dest_x - AbsXdirection) - (Width - 1) * 50;
 		SlidingDestination.Y = 100 * (dest_y - AbsYdirection) - (Length -1) * 50;
