@@ -42,6 +42,9 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	TArray <FString> ActiveRulesStore;
 
+	UPROPERTY(EditAnywhere, Category = "Music")
+	USoundCue* DeadSound;
+
 	UPROPERTY(BlueprintReadWrite)
 	FString AllActiveRules;
 
