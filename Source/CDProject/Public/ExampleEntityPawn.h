@@ -20,6 +20,13 @@ public:
 	UPROPERTY(EditAnywhere)
 	USceneComponent* SceneComponent;
 
+	UPROPERTY(EditAnywhere, Category = "Default Mesh Relative Transform")
+	FVector DefaultRelativeLocation = FVector(0, 0, 0);
+	UPROPERTY(EditAnywhere, Category = "Default Mesh Relative Transform")
+	FRotator DefaultRelativeRotation = FRotator(0, 0, 0);
+	UPROPERTY(EditAnywhere, Category = "Default Mesh Relative Transform")
+	FVector DefaultRelativeScale = FVector(1, 1, 1);
+
 	UPROPERTY(EditAnywhere, Category = "Attribute")
 	bool bWalkable = true;
 

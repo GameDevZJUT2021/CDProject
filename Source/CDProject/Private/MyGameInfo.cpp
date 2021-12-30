@@ -755,9 +755,23 @@ void AMyGameInfo::ChangeAllEntity(EObjectTags srcTag, EObjectTags destTag) const
 }
 
 void AMyGameInfo::ChangeEntity(AEntityPawn* pSrcPawn, const AExampleEntityPawn* const pDestPawn) const {
-	pSrcPawn->StaticMeshComponent->SetStaticMesh(pDestPawn->StaticMesh);
-	pSrcPawn->StaticMeshComponent->SetRelativeScale3D(pDestPawn->GetActorScale());
-	pSrcPawn->SkeletalMeshComponent->SetSkeletalMesh(pDestPawn->SkeletalMesh);
+	if (pDestPawn->StaticMesh)
+	{
+		pSrcPawn->SkeletalMeshComponent->SetSkeletalMesh(nullptr);
+		pSrcPawn->StaticMeshComponent->SetStaticMesh(pDestPawn->StaticMesh);
+		pSrcPawn->StaticMeshComponent->SetRelativeLocation(pDestPawn->DefaultRelativeLocation);
+		pSrcPawn->StaticMeshComponent->SetRelativeRotation(pDestPawn->DefaultRelativeRotation);
+		pSrcPawn->StaticMeshComponent->SetRelativeScale3D(pDestPawn->DefaultRelativeScale);
+	}
+	else if (pDestPawn->SkeletalMesh)
+	{
+		pSrcPawn->StaticMeshComponent->SetStaticMesh(nullptr);
+		pSrcPawn->SkeletalMeshComponent->SetSkeletalMesh(pDestPawn->SkeletalMesh);
+		pSrcPawn->SkeletalMeshComponent->SetRelativeLocation(pDestPawn->DefaultRelativeLocation);
+		pSrcPawn->SkeletalMeshComponent->SetRelativeRotation(pDestPawn->DefaultRelativeRotation);
+		pSrcPawn->SkeletalMeshComponent->SetRelativeScale3D(pDestPawn->DefaultRelativeScale);
+	}
+
 
 	pSrcPawn->haveFace = pDestPawn->haveFace;
 	pSrcPawn->bWalkable = pDestPawn->bWalkable;
