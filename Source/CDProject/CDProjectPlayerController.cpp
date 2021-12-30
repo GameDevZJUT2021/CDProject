@@ -8,12 +8,22 @@
 #include "RulePawn.h"
 #include "EngineUtils.h"
 #include "Misc/OutputDeviceNull.h"
+#include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 
 ACDProjectPlayerController::ACDProjectPlayerController()
 {
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Crosshairs;
+
+	// Load Sound Effect
+	static ConstructorHelpers::FObjectFinder<USoundCue> WinSoundLoader(TEXT("/Game/Music/SoundEffect/win_Cue"));
+	if (WinSoundLoader.Succeeded())
+		WinSound = WinSoundLoader.Object;
+
+	static ConstructorHelpers::FObjectFinder<USoundCue> DefeatSoundLoader(TEXT("/Game/Music/SoundEffect/lose_Cue"));
+	if (DefeatSoundLoader.Succeeded())
+		DefeatSound = DefeatSoundLoader.Object;
 
 }
 
@@ -107,12 +117,14 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString(TEXT("You Win")));
 					FOutputDeviceNull OutputDeviceNull;
 					CallFunctionByNameWithArguments(TEXT("Function_UMG_CreateNewWindow_Win"), OutputDeviceNull, nullptr, true);
+					UGameplayStatics::PlaySound2D(GetWorld(), WinSound);
 				}
 				if (MyGameInfo->DefeatJudge())
 				{
 					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("You Lose")));
 					FOutputDeviceNull OutputDeviceNull;
 					CallFunctionByNameWithArguments(TEXT("Function_UMG_CreateNewWindow_Lose"), OutputDeviceNull, nullptr, true);
+					UGameplayStatics::PlaySound2D(GetWorld(), DefeatSound);
 				}
 			}
 			break;
@@ -126,15 +138,17 @@ void ACDProjectPlayerController::PlayerTick(float DeltaTime)
 				MyGameInfo->UpdateRule(CameraAbsLocation);
 				if (MyGameInfo->WinJudge())
 				{
-					// 弹出胜利窗口
 					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString(TEXT("You Win")));
-
+					FOutputDeviceNull OutputDeviceNull;
+					CallFunctionByNameWithArguments(TEXT("Function_UMG_CreateNewWindow_Win"), OutputDeviceNull, nullptr, true);
+					UGameplayStatics::PlaySound2D(GetWorld(), WinSound);
 				}
 				if (MyGameInfo->DefeatJudge())
 				{
-					// 弹出失败窗口
 					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("You Lose")));
-
+					FOutputDeviceNull OutputDeviceNull;
+					CallFunctionByNameWithArguments(TEXT("Function_UMG_CreateNewWindow_Lose"), OutputDeviceNull, nullptr, true);
+					UGameplayStatics::PlaySound2D(GetWorld(), DefeatSound);
 				}
 			}
 			break;

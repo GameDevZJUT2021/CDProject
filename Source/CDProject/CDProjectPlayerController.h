@@ -7,6 +7,7 @@
 #include "ObservePawn.h"
 #include "MyGameInfo.h"
 #include "CommonEnum.h"
+#include "Sound/SoundCue.h"
 #include "CDProjectPlayerController.generated.h"
 
 UCLASS()
@@ -16,6 +17,9 @@ class ACDProjectPlayerController : public APlayerController
 
 public:
 	ACDProjectPlayerController();
+
+	USoundCue* WinSound;
+	USoundCue* DefeatSound;
 
 protected:
 	TQueue<EActions> ActionQueue;
