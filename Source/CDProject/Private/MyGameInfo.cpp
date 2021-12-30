@@ -3,6 +3,7 @@
 
 #include "MyGameInfo.h"
 #include "EntityPawn.h"
+#include "Kismet/GameplayStatics.h"
 #include "RulePawn.h"
 #include "Materials/MaterialInstanceDynamic.h"
 
@@ -11,6 +12,10 @@ AMyGameInfo::AMyGameInfo()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	// PrimaryActorTick.bCanEverTick = true;
+
+	static ConstructorHelpers::FObjectFinder<USoundCue> DeadSoundLoader(TEXT("/Game/Music/SoundEffect/dead_Cue"));
+	if (DeadSoundLoader.Succeeded())
+		DeadSound = DeadSoundLoader.Object;
 
 }
 
@@ -689,6 +694,9 @@ bool AMyGameInfo::DefeatJudge() const{
 		if (bDefeatL1 && bYouL1)
 		{
 			// 销毁这个单元上每一个为You的Pawn
+		   // play dead music effect once
+			if (DeadSound)
+				UGameplayStatics::PlaySound2D(GetWorld(), DeadSound);
 			for (AParentPawn* pDyingPawn : pYouPawnsL1)
 			{
 				LivePawnNum--;
@@ -697,6 +705,9 @@ bool AMyGameInfo::DefeatJudge() const{
 		}
 		if (bDefeatL2 && bYouL2)
 		{
+			// play dead music effect once
+			if (DeadSound)
+				UGameplayStatics::PlaySound2D(GetWorld(), DeadSound);
 			for (AParentPawn* pDyingPawn : pYouPawnsL2)
 			{
 				LivePawnNum--;

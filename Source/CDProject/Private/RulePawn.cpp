@@ -22,6 +22,12 @@ ARulePawn::ARulePawn() {
 		StaticMeshComponent->SetWorldScale3D(FVector(0.55f));
 	}
 
+	TopMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/StaticMesh/rule/rule/rule6/Material_006.Material_006"));
+	EastMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/StaticMesh/rule/rule/rule6/Material_006.Material_006"));
+	WestMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/StaticMesh/rule/rule/rule6/Material_006.Material_006"));
+	NorthMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/StaticMesh/rule/rule/rule6/Material_006.Material_006"));
+	SouthMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/StaticMesh/rule/rule/rule6/Material_006.Material_006"));
+
 	Tag = EObjectTags::Rule;
 	bWalkable = false;
 
