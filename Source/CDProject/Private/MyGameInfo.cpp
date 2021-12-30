@@ -151,7 +151,12 @@ void AMyGameInfo::UpdateMapInfo() {
 			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,pParentPawn->GetHumanReadableName());
 			continue;
 		}
-		// 这里最好还是加一个四舍五入,暂时没加
+		// 将位置与100对齐
+		PawnLocation.X = round(PawnLocation.X);
+		PawnLocation.Y = round(PawnLocation.Y);
+
+		pParentPawn->SetActorLocation(PawnLocation);
+		
 		int x = (PawnLocation.X + (MapWidth - 1) * 50) / 100;
 		int y = (PawnLocation.Y + (MapLength - 1) * 50) / 100;
 		// 忽略位置错误的pawn
@@ -740,6 +745,7 @@ void AMyGameInfo::ChangeAllEntity(EObjectTags srcTag, EObjectTags destTag) const
 
 void AMyGameInfo::ChangeEntity(AEntityPawn* pSrcPawn, const AExampleEntityPawn* const pDestPawn) const {
 	pSrcPawn->StaticMeshComponent->SetStaticMesh(pDestPawn->StaticMesh);
+	pSrcPawn->StaticMeshComponent->SetRelativeScale3D(pDestPawn->GetActorScale());
 	pSrcPawn->SkeletalMeshComponent->SetSkeletalMesh(pDestPawn->SkeletalMesh);
 
 	pSrcPawn->haveFace = pDestPawn->haveFace;
