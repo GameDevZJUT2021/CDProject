@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Sound/SoundCue.h"
 #include "ParentPawn.h"
+#include "Components/AudioComponent.h"
 #include "EntityPawn.generated.h"
 
 
@@ -51,6 +53,13 @@ public:
 	bool isSelfRotating = 0;
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	uint8 RotateSpeed = 0;
+
+	UPROPERTY(EditAnywhere, Category = "Music")
+	USoundCue* WalkSound;
+	UPROPERTY(EditAnywhere, Category = "Music")
+	USoundCue* SlideSound;
+
+	UAudioComponent* SlideAudioComp = nullptr;
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

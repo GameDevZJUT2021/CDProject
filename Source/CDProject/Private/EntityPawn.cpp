@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "EntityPawn.h"
+#include "Kismet/GameplayStatics.h"
+#include <AudioDeviceManager.h>
 #include "MyGameInfo.h"
 
 AEntityPawn::AEntityPawn() {
@@ -24,6 +26,14 @@ AEntityPawn::AEntityPawn() {
 		StaticMeshComponent->SetWorldScale3D(FVector(1.0f));
 	}
 
+	// Load Default Sound Effect
+	static ConstructorHelpers::FObjectFinder<USoundCue> WalkSoundLoader(TEXT("/Game/Music/SoundEffect/walk_Cue"));
+	if (WalkSoundLoader.Succeeded())
+		WalkSound = WalkSoundLoader.Object;
+
+	static ConstructorHelpers::FObjectFinder<USoundCue> SlideSoundLoader(TEXT("/Game/Music/SoundEffect/slide_Cue"));
+	if (SlideSoundLoader.Succeeded())
+		SlideSound = SlideSoundLoader.Object;
 }
 
 void AEntityPawn::BeginPlay() {
@@ -51,6 +61,8 @@ void AEntityPawn::Tick(float DeltaTime)
 		if (FVector::Dist(NewLocation, SlidingDestination) <= 1)
 		{
 			// 不播放Idle动画,而是让SlideEndAnim播放完整
+			
+			SlideAudioComp->SetActive(false);
 			bSliding = false;
 		}
 	}
@@ -242,6 +254,10 @@ bool AEntityPawn::BeginMove(int AbsXdirection, int AbsYdirection, bool Controlle
 
 		SkeletalMeshComponent->PlayAnimation(SlideBeginAnim, false);
 
+		// play slide music effect
+		if (SlideSound)// keep reference of that sound cue in order to stop it
+			SlideAudioComp = UGameplayStatics::SpawnSound2D(GetWorld(), SlideSound);
+
 		return true;
 	}
 	// 不能slide就进行普通的判断
@@ -320,6 +336,11 @@ bool AEntityPawn::BeginMove(int AbsXdirection, int AbsYdirection, bool Controlle
 			}
 
 		}
+
+		// play walk music effect
+		if(WalkSound)
+			UGameplayStatics::PlaySound2D(GetWorld(), WalkSound);
+
 		return true;
 	}
 }
