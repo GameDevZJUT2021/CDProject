@@ -19,6 +19,3 @@ public:
 
 	AMyGameInfo* MyGameInfo;
 };
-
-
-

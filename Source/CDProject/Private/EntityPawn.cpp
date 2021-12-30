@@ -39,6 +39,9 @@ AEntityPawn::AEntityPawn() {
 void AEntityPawn::BeginPlay() {
 	Super::BeginPlay();
 
+	if(IdleAnim)
+		SkeletalMeshComponent->PlayAnimation(IdleAnim, true);
+
 }
 
 // Called every frame
@@ -225,10 +228,31 @@ bool AEntityPawn::BeginMove(int AbsXdirection, int AbsYdirection, bool Controlle
 					}
 					else if (pawn->bWalkable == false)
 					{
-						if (CurrGameInfo->ActiveRules.FindPair(ERuleTags::Slide, static_cast<ERuleTags>(pawn->Tag)))//这一格的Pawn一起滑动
+						// 如果这一格的pawn能够滑动且是you, 则跟在这个pawn后面一起滑动
+						if (CurrGameInfo->ActiveRules.FindPair(ERuleTags::Slide, static_cast<ERuleTags>(pawn->Tag))
+						&& CurrGameInfo->ActiveRules.FindPair(ERuleTags::You, static_cast<ERuleTags>(pawn->Tag)))
 							SlideStack++;
 						else
 							shouldStop = true;
+
+						// 如果这一格的pawn是you, 则这个pawn必然会在同一个方向尝试前进,则滑动的目标要前进一格
+						if (CurrGameInfo->ActiveRules.FindPair(ERuleTags::You, static_cast<ERuleTags>(pawn->Tag)))
+							SlideStack--;
+
+						if (CurrGameInfo->ActiveRules.FindPair(ERuleTags::Move, static_cast<ERuleTags>(pawn->Tag)))
+						{
+							AEntityPawn* tempEntityPawn = dynamic_cast<AEntityPawn*>(pawn);
+							if (tempEntityPawn->FaceDirection == this->FaceDirection)
+								SlideStack--;
+							else if (tempEntityPawn->FaceDirection * (-1.0f) == this->FaceDirection)
+								SlideStack++;
+						}
+
+					}
+					// 对于所有能推动的物体且不会滑动的物体,都停在这个物体前
+					else if (CurrGameInfo->ActiveRules.FindPair(ERuleTags::Push, static_cast<ERuleTags>(pawn->Tag)))
+					{
+						shouldStop = true;
 					}
 				}
 			}

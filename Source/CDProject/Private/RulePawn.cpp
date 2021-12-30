@@ -18,6 +18,7 @@ ARulePawn::ARulePawn() {
 	{
 		StaticMeshComponent->SetStaticMesh(CubeMeshAsset.Object);
 		StaticMeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
+		StaticMeshComponent->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 		StaticMeshComponent->SetWorldScale3D(FVector(0.55f));
 	}
 
